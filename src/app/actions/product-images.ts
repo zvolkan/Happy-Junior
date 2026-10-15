@@ -90,8 +90,7 @@ export async function addProductImage(
       },
     })
 
-    revalidatePath('/admin/alb-tarim/urunler')
-revalidatePath('/admin/alb-su-aritma/urunler')
+    revalidatePath('/admin/urunler')
     return { ok: true, images: await listImages(productId) }
   } catch (error) {
     console.error('[görsel] eklenemedi:', productId, error)
@@ -130,8 +129,7 @@ export async function removeProductImage(imageId: number): Promise<ImageActionRe
       if (fileName) await deleteProductImage(fileName).catch(() => {})
     }
 
-    revalidatePath('/admin/alb-tarim/urunler')
-revalidatePath('/admin/alb-su-aritma/urunler')
+    revalidatePath('/admin/urunler')
     return { ok: true, images: await listImages(image.productId) }
   } catch (error) {
     console.error('[görsel] silinemedi:', imageId, error)
@@ -158,8 +156,7 @@ export async function setPrimaryImage(imageId: number): Promise<ImageActionResul
       prisma.productImage.update({ where: { id: imageId }, data: { isPrimary: true } }),
     ])
 
-    revalidatePath('/admin/alb-tarim/urunler')
-revalidatePath('/admin/alb-su-aritma/urunler')
+    revalidatePath('/admin/urunler')
     return { ok: true, images: await listImages(image.productId) }
   } catch (error) {
     console.error('[görsel] kapak değiştirilemedi:', imageId, error)
@@ -191,8 +188,7 @@ export async function reorderProductImages(
       ),
     )
 
-    revalidatePath('/admin/alb-tarim/urunler')
-revalidatePath('/admin/alb-su-aritma/urunler')
+    revalidatePath('/admin/urunler')
     return { ok: true, images: await listImages(productId) }
   } catch (error) {
     console.error('[görsel] sıralanamadı:', productId, error)

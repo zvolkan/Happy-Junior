@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { BRAND } from '@/lib/constants'
+import { SATICI } from '@/lib/legal'
 
 export const metadata: Metadata = {
   title: 'KVKK Aydınlatma Metni',
@@ -10,12 +12,12 @@ const sections = [
   {
     title: '1. Veri Sorumlusunun Kimliği',
     content:
-      'Bayırlıoğlu (ALB Tarım ve Alb Su Teknolojileri markaları), 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca veri sorumlusu sıfatıyla aşağıdaki bilgileri paylaşmaktadır.\n\nAdres: Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı, Yeşilyurt, Akdeniz Cd. No:20/22, 33640 Anamur/Mersin\nE-posta: kvkk@bayirlioglu.com',
+      `${SATICI.unvan}, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca veri sorumlusu sıfatıyla aşağıdaki bilgileri paylaşmaktadır.\n\nAdres: ${SATICI.adres}\nE-posta: ${SATICI.eposta}`,
   },
   {
     title: '2. İşlenen Kişisel Veriler',
     content:
-      'Ad-soyad, e-posta adresi, telefon numarası, teslimat adresi, ödeme bilgileri (kart numarası şifrelenerek saklanır), IP adresi ve çerez verileri işlenmektedir.',
+      'Ad-soyad, e-posta adresi, telefon numarası, teslimat adresi, ödeme bilgileri (havale/EFT gönderen adı ve tutarı; kart bilgileri sitemizde saklanmaz), IP adresi ve çerez verileri işlenmektedir.',
   },
   {
     title: '3. Kişisel Verilerin İşlenme Amaçları',
@@ -40,7 +42,7 @@ const sections = [
   {
     title: '7. Haklarınız',
     content:
-      "KVKK'nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, düzeltme talep etme, silinmesini isteme, işlemeye itiraz etme ve zararın giderilmesini talep etme haklarına sahipsiniz. Taleplerinizi kvkk@bayirlioglu.com adresine iletebilirsiniz.",
+      `KVKK'nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, düzeltme talep etme, silinmesini isteme, işlemeye itiraz etme ve zararın giderilmesini talep etme haklarına sahipsiniz. Taleplerinizi ${SATICI.eposta} adresine iletebilirsiniz.`,
   },
 ]
 
@@ -50,7 +52,7 @@ export default function KvkkPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
         <div className="mb-10">
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-2">
-            Bayırlıoğlu
+            {BRAND.name}
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
             KVKK Aydınlatma Metni
@@ -70,8 +72,8 @@ export default function KvkkPage() {
         <div className="mt-12 p-5 bg-gray-50 rounded-xl border border-gray-200">
           <p className="text-sm text-gray-600">
             Kişisel veri talepleriniz için:{' '}
-            <a href="mailto:kvkk@bayirlioglu.com" className="text-blue-600 hover:underline font-medium">
-              kvkk@bayirlioglu.com
+            <a href={`mailto:${SATICI.eposta}`} className="text-brand-700 hover:underline font-medium">
+              {SATICI.eposta}
             </a>
           </p>
         </div>

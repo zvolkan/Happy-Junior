@@ -76,7 +76,7 @@ export default {
         return
       }
 
-      const taban = e.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'https://bayirlioglu.com'
+      const taban = e.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'https://happyjunioranamur.com'
       const url = new URL(gorev.yol, taban)
 
       const self = env.WORKER_SELF_REFERENCE

@@ -9,7 +9,6 @@ import { formatPrice, cn } from '@/lib/utils'
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ArrowLeft, Package } from 'lucide-react'
 import { KARGO_LIMIT as CARGO_THRESHOLD, calculateTotals } from '@/lib/checkout'
 import { getFreshCartData } from '@/app/actions/cart'
-import BrandLogo from '@/components/ui/BrandLogo'
 
 export default function SepetPage() {
   const { items, removeItem, updateQuantity, getTotalPrice } = useCart()
@@ -59,18 +58,6 @@ export default function SepetPage() {
   // detayı da aynı fonksiyonu kullanır, böylece rakamlar birbirini tutar.
   const { subtotal, shippingFee: cargoFee, total } = calculateTotals(getTotalPrice())
 
-  // Ödeme tek marka üzerinden yapılıyor (iyzico işlemi tek satıcıya bağlanıyor).
-  // Sepette iki markanın ürünü varsa müşteri ödeme adımında sunucudan hata
-  // alıyor ama sepette hiçbir uyarı görmüyordu — çıkmaz sokak.
-  const brandsInCart = Array.from(new Set(items.map((i) => i.product.brand)))
-  const mixedBrands = brandsInCart.length > 1
-
-  // Sepet, marka yollarının dışında olduğu için kök düzen burada varsayılan
-  // markayı (ALB Tarım = yeşil) uyguluyor. Sepetin içindeki ürün Alb Su ise
-  // renkleri o markaya çeviriyoruz; karışık sepette varsayılana bırakıyoruz.
-  const sepetMarkasi =
-    !mixedBrands && brandsInCart[0] === 'alb-su-aritma' ? 'alb-su-aritma' : undefined
-
   // localStorage okunana kadar iskelet göster — aksi hâlde sunucuda "Sepetiniz
   // boş" render edilip istemcide dolu sepete atlıyor (hydration uyumsuzluğu).
   if (!hasHydrated) {
@@ -93,20 +80,6 @@ export default function SepetPage() {
 
   if (items.length === 0) {
     return (
-      /*
-        Boş sepet ekranı, ana sayfa hero'sunun karanlık zeminini ve cam marka
-        kartlarını birebir kullanıyor.
-
-        Önceki hâli doygun yeşil/mavi düğmelerdi ve logolar okunsun diye
-        altlarına beyaz birer kutu konmuştu. Aynı çıkmaz hero'da da yaşanmıştı:
-        ALB Tarım logosunun yaprağı yeşil, Alb Su damlası mavi — ikisi de kendi
-        marka renginin üstünde kayboluyor. Çözüm orada da altlık eklemek değil,
-        ZEMİNİ nötrleştirmek olmuştu. Burada da öyle: koyu zemin üzerinde renkli
-        logolar kendiliğinden okunuyor, kutuya gerek kalmıyor ve göz almıyor.
-
-        Marka rengi kaybolmuyor; kenarlık ve gölge fareyle üzerine gelindiğinde
-        markanın rengine dönüyor.
-      */
       <div className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden bg-neutral-950">
         {/* Hero ile aynı üç katmanlı zemin */}
         <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-stone-900" />
@@ -122,50 +95,19 @@ export default function SepetPage() {
             Henüz sepetinize ürün eklemediniz. Alışverişe başlamak için ürünlerimize göz atın.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Link
-              href="/alb-tarim/urunler"
-              className="arrow-slide group flex items-center gap-3.5 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3.5 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-tarim-400/50 hover:bg-white/[0.1] hover:shadow-lg hover:shadow-tarim-500/15"
-            >
-              <BrandLogo brand="alb-tarim" boyut="md" className="icon-pop" />
-              <span className="min-w-0 flex-1">
-                <span className="block font-bold text-white leading-tight">
-                  Bayırlıoğlu Tarım
-                </span>
-                <span className="mt-0.5 block truncate text-xs text-white/55">
-                  Gübre · Zirai Danışmanlık
-                </span>
-              </span>
-              <span className="arrow flex-shrink-0 text-white/40 transition-colors group-hover:text-white">
-                →
-              </span>
-            </Link>
-
-            <Link
-              href="/alb-su-aritma/urunler"
-              className="arrow-slide group flex items-center gap-3.5 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3.5 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-albsu-400/50 hover:bg-white/[0.1] hover:shadow-lg hover:shadow-albsu-500/15"
-            >
-              <BrandLogo brand="alb-su-aritma" boyut="md" className="icon-pop" />
-              <span className="min-w-0 flex-1">
-                <span className="block font-bold text-white leading-tight">
-                  Alb Su Teknolojileri
-                </span>
-                <span className="mt-0.5 block truncate text-xs text-white/55">
-                  Su Arıtma · Klima · Yedek Parça
-                </span>
-              </span>
-              <span className="arrow flex-shrink-0 text-white/40 transition-colors group-hover:text-white">
-                →
-              </span>
-            </Link>
-          </div>
+          <Link
+            href="/urunler"
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-brand-800 shadow-lg transition-all hover:-translate-y-0.5 hover:bg-brand-50"
+          >
+            Alışverişe Başla →
+          </Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" data-brand={sepetMarkasi}>
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -176,19 +118,6 @@ export default function SepetPage() {
             </span>
           </h1>
 
-          {mixedBrands && (
-            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-              <p className="text-sm font-semibold text-amber-900">
-                Sepetinizde iki farklı markanın ürünü var
-              </p>
-              <p className="text-sm text-amber-800 mt-1 leading-relaxed">
-                ALB Tarım ve ALB Su Teknolojileri siparişleri ayrı ayrı
-                tamamlanıyor. Ödemeye geçebilmek için bir markanın ürünlerini
-                sepetten çıkarıp önce diğerini tamamlayın, sonra kalanlar için
-                yeni sipariş verin.
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
@@ -333,24 +262,13 @@ export default function SepetPage() {
                 </div>
               </div>
 
-              {mixedBrands ? (
-                <button
-                  type="button"
-                  disabled
-                  title="Sepetinizde iki farklı markanın ürünü var"
-                  className="mt-5 w-full flex items-center justify-center gap-2 bg-gray-200 text-gray-500 font-semibold py-3 rounded-xl text-sm cursor-not-allowed"
-                >
-                  Siparişi Tamamla
-                </button>
-              ) : (
-                <Link
-                  href="/odeme"
-                  className="mt-5 w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
-                >
-                  Siparişi Tamamla
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              )}
+              <Link
+                href="/odeme"
+                className="mt-5 w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+              >
+                Siparişi Tamamla
+                <ArrowRight className="w-4 h-4" />
+              </Link>
 
               <p className="text-xs text-gray-400 text-center mt-3">
                 Güvenli ödeme ile korunan alışveriş

@@ -32,18 +32,12 @@ interface Props {
   }
 }
 
-// 'Zirai İlaç' yerine 'Bitki Koruma' kondu. Ürünlerin internetten satışı
-// yasak olduğu için başlığın satış çağrısı gibi okunmaması önemli; buna
-// karşılık bilgilendirici yazı yazmak serbest ve zaten danışmanlığın bir
-// parçası. Bu alan serbest metin girişi (datalist yalnızca öneri listesi),
-// dolayısıyla eski yazıların kategorisi kendiliğinden değişmez.
 const KATEGORILER = [
-  'Gübreleme',
-  'Bitki Koruma',
-  'Bitki Besleme',
-  'Toprak Analizi',
-  'Su Arıtma',
-  'Bakım & Servis',
+  'Beden Rehberi',
+  'Yeni Sezon',
+  'Bebek Bakımı',
+  'Anne-Baba İpuçları',
+  'Kampanya',
   'Duyuru',
 ]
 
@@ -218,7 +212,7 @@ export default function BlogForm({ brands, kapsam, defaultValues = {} }: Props) 
               name="author"
               defaultValue={defaultValues.author ?? ''}
               maxLength={120}
-              placeholder="Bayırlıoğlu"
+              placeholder="Happy Junior"
               className={input}
             />
           </div>

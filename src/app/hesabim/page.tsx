@@ -82,8 +82,7 @@ export default async function HesabimPage() {
   }
 
   const user = dbUser!
-  const albTarimOrders = user.orders.filter((o) => o.brand.key === 'alb-tarim')
-  const albSuOrders = user.orders.filter((o) => o.brand.key === 'alb-su-aritma')
+  const orders = user.orders
 
   return (
     <main className="min-h-screen bg-gray-50 py-10">
@@ -108,12 +107,10 @@ export default async function HesabimPage() {
         </div>
 
         {/* Özet kartlar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8">
           {[
-            { label: 'ALB Tarım Sipariş',    value: albTarimOrders.length,  icon: 'filiz' as const },
-            { label: 'Alb Su Sipariş',        value: albSuOrders.length,     icon: 'damla' as const },
-            { label: 'Kayıtlı Adres',         value: user.addresses.length,  icon: 'konum' as const },
-            { label: 'Toplam Sipariş',         value: user.orders.length,    icon: 'paket' as const },
+            { label: 'Sipariş',       value: orders.length,         icon: 'paket' as const },
+            { label: 'Kayıtlı Adres', value: user.addresses.length, icon: 'konum' as const },
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
               <Icon name={stat.icon} className="w-6 h-6 mx-auto mb-1 text-gray-400" />
@@ -185,31 +182,31 @@ export default async function HesabimPage() {
           {/* SAĞ — Siparişler */}
           <div className="lg:col-span-2 min-w-0 space-y-6">
 
-            {/* ALB Tarım Siparişleri */}
+            {/* Siparişler */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <BrandLogo brand="alb-tarim" boyut="sm" kutuSinifi="bg-green-600 rounded-lg" />
-                  <h2 className="font-semibold text-gray-900">ALB Tarım Siparişleri</h2>
+                  <BrandLogo boyut="sm" kutuSinifi="bg-brand-600 rounded-lg" />
+                  <h2 className="font-semibold text-gray-900">Siparişlerim</h2>
                 </div>
-                <Link href="/alb-tarim/urunler" className="text-xs text-green-600 font-semibold hover:underline">
+                <Link href="/urunler" className="text-xs text-brand-600 font-semibold hover:underline">
                   Yeni Sipariş →
                 </Link>
               </div>
 
-              {albTarimOrders.length === 0 ? (
+              {orders.length === 0 ? (
                 <div className="p-8 text-center">
                   <p className="text-gray-400 text-sm mb-3">Henüz sipariş vermediniz.</p>
                   <Link
-                    href="/alb-tarim/urunler"
-                    className="inline-block px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-semibold transition-colors"
+                    href="/urunler"
+                    className="inline-block px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold transition-colors"
                   >
                     Ürünleri İncele
                   </Link>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-50">
-                  {albTarimOrders.map((order) => {
+                  {orders.map((order) => {
                     const status = ORDER_STATUS_LABELS[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700' }
                     return (
                       <div key={order.id} className="p-5">
@@ -229,78 +226,21 @@ export default async function HesabimPage() {
                         <div className="space-y-1.5 mb-4">
                           {order.items.map((item) => (
                             <div key={item.id} className="flex items-center gap-2 text-sm text-gray-600">
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand-400 flex-shrink-0" />
                               <span className="flex-1 truncate">{item.product.name}</span>
                               <span className="text-gray-400 flex-shrink-0">{item.quantity} {item.product.unit}</span>
                             </div>
                           ))}
                         </div>
 
-                        {/* Çiftçi için "Aynı siparişi tekrarla" */}
-                        <RepeatOrderButton orderId={order.id} brandKey="alb-tarim" />
+                        {/* "Aynı siparişi tekrarla" */}
+                        <RepeatOrderButton orderId={order.id} brandKey="happy-junior" />
                       </div>
                     )
                   })}
                 </div>
               )}
             </div>
-
-            {/* Alb Su Siparişleri */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                  <BrandLogo brand="alb-su-aritma" boyut="sm" kutuSinifi="bg-blue-600 rounded-lg" />
-                  <h2 className="font-semibold text-gray-900">Alb Su Teknolojileri Siparişleri</h2>
-                </div>
-                <Link href="/alb-su-aritma/urunler" className="text-xs text-blue-600 font-semibold hover:underline">
-                  Yeni Sipariş →
-                </Link>
-              </div>
-
-              {albSuOrders.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-gray-400 text-sm mb-3">Henüz sipariş vermediniz.</p>
-                  <Link
-                    href="/alb-su-aritma/urunler"
-                    className="inline-block px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
-                  >
-                    Ürünleri İncele
-                  </Link>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-50">
-                  {albSuOrders.map((order) => {
-                    const status = ORDER_STATUS_LABELS[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700' }
-                    return (
-                      <div key={order.id} className="p-5">
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                          <div>
-                            <p className="text-xs text-gray-400 font-mono mb-0.5">#{formatOrderNo(order)}</p>
-                            <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
-                              {status.label}
-                            </span>
-                            <span className="text-sm font-bold text-gray-900">{formatPrice(order.totalAmount)}</span>
-                          </div>
-                        </div>
-                        <div className="space-y-1.5">
-                          {order.items.map((item) => (
-                            <div key={item.id} className="flex items-center gap-2 text-sm text-gray-600">
-                              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                              <span className="flex-1 truncate">{item.product.name}</span>
-                              <span className="text-gray-400 flex-shrink-0">{item.quantity} {item.product.unit}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
           </div>
         </div>
       </div>

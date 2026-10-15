@@ -89,16 +89,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'aosmith.com.tr',
-      },
-      {
-        protocol: 'https',
         hostname: '*.supabase.co',
       },
     ],
-  },
-  env: {
-    NEXT_PUBLIC_BRAND: process.env.NEXT_PUBLIC_BRAND ?? 'alb-tarim',
   },
 
   /**

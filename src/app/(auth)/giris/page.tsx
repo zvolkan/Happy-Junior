@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import GrupLogo from '@/components/ui/GrupLogo'
+import MagazaLogo from '@/components/ui/MagazaLogo'
 import GoogleGiris from '@/components/auth/GoogleGiris'
 import { signIn, signInWithGoogle } from '@/app/actions/auth'
 
@@ -26,10 +26,7 @@ export default async function GirisPage({
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4">
-            {/* Eskiden "BG" harfleri yazıyordu; dört auth sayfasında da
-                kopyalanmıştı. Artık markanın tam kilidi (dağ + yazı), tek
-                bileşenden. Yazı logonun içinde olduğu için ayrıca metin yok. */}
-            <GrupLogo />
+            <MagazaLogo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Hesabınıza Giriş Yapın</h1>
           <p className="text-gray-500 text-sm mt-1">Sipariş geçmişinize ve profilinize erişin</p>
@@ -57,7 +54,7 @@ export default async function GirisPage({
           {/*
             Google ile giriş.
 
-            Onay ekranında artık "Bayırlıoğlu" adı, logosu ve kendi alan adımız
+            Onay ekranında artık mağaza adı, logosu ve kendi alan adımız
             görünüyor; `supabase.co` adresi hiç kullanılmıyor. Gerekçe ve akışın
             ayrıntısı components/auth/GoogleGiris.tsx içinde.
           */}

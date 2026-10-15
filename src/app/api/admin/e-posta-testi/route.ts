@@ -109,7 +109,7 @@ export async function GET(request: Request) {
 
   const result = await sendEmail({
     to,
-    subject: 'Bayırlıoğlu — e-posta testi',
+    subject: 'Happy Junior — e-posta testi',
     html: '<p>Bu bir test e-postasıdır. Bunu görüyorsanız yapılandırma doğru.</p>',
     text: 'Bu bir test e-postasıdır. Bunu görüyorsanız yapılandırma doğru.',
   })

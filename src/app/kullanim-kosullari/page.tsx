@@ -52,8 +52,7 @@ export default function KullanimKosullariPage() {
                 Aşağıdaki ödeme yöntemlerini kabul etmekteyiz:
               </p>
               <ul className="list-disc list-outside pl-5 text-gray-600 space-y-2 marker:text-gray-400">
-                <li>Kredi kartı ve banka kartı (iyzico altyapısı, 3D Secure güvencesiyle)</li>
-                <li>Kredi kartına taksitli ödeme</li>
+                <li>Havale / EFT (banka bilgileri sipariş onayında bildirilir)</li>
               </ul>
             </section>
 

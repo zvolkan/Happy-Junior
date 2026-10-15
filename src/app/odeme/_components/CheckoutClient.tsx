@@ -135,7 +135,7 @@ export default function CheckoutClient({ addresses }: Props) {
     )
   }
 
-  const brandKey = items[0]?.product.brand ?? 'alb-tarim'
+  const brandKey = items[0]?.product.brand ?? 'happy-junior'
 
   const handleSubmit = async () => {
     setError(null)
@@ -339,7 +339,7 @@ export default function CheckoutClient({ addresses }: Props) {
                       id="invoiceTitle"
                       value={invoiceTitle}
                       onChange={(e) => setInvoiceTitle(e.target.value)}
-                      placeholder="Örn: Yılmaz Tarım Ürünleri Ltd. Şti."
+                      placeholder="Örn: Yılmaz Tekstil Ltd. Şti."
                       className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     />
                   </div>

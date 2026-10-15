@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
+import { BRAND } from '@/lib/constants'
 
-// Sayfanın kendisi istemci bileşeni olduğu için metadata burada duruyor.
-// Canonical gerekçesi için bkz. src/app/hakkimizda/page.tsx
+/** Sayfa istemci bileşeni olduğu için metadata bu layout'ta duruyor. */
 export const metadata: Metadata = {
+  title: 'İletişim',
+  description: `${BRAND.name} ile iletişime geçin: telefon, WhatsApp ve iletişim formu.`,
   alternates: { canonical: '/iletisim' },
-  title: 'İletişim — Bayırlıoğlu',
-  description: 'Sorularınız, önerileriniz ve hizmet talepleriniz için bize ulaşın. Anamur/Mersin merkezli Bayırlıoğlu iletişim bilgileri.',
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

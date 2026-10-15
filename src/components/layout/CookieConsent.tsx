@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
-const STORAGE_KEY = 'bayirlioglu-cookie-consent'
+const STORAGE_KEY = 'happyjunior-cookie-consent'
 const CONSENT_VERSION = '1'
 
 type ConsentValue = 'all' | 'necessary'

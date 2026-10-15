@@ -5,20 +5,9 @@ import { createSignedUploadUrl } from '@/app/actions/admin'
 import { slugify } from '@/lib/utils'
 import Icon from '@/components/ui/Icon'
 
-// ── Ürün markası listesi (11 marka) ──────────────────────────────────────────
-const URUN_MARKALARI = [
-  'ALB TARIM',
-  'TİMAC AGRO',
-  'BAZACHEM',
-  'HAIFA',
-  'STOLLER',
-  'ATLANTICA AGRICOLA',
-  'UNITTAR',
-  "LANCE'S LINK",
-  'LEBOSOL',
-  'TAMAGRO',
-  'FERTIVAL',
-]
+// ── Üretici markası önerileri (serbest metin; liste yalnızca öneri) ─────────
+// TODO(müşteri): mağazanın çalıştığı markalar eklenecek.
+const URUN_MARKALARI = ['Mudese']
 
 type Brand = { id: number; key: string; name: string }
 type Category = { id: number; name: string; parentId?: number | null; brand: Brand }
@@ -167,7 +156,8 @@ export default function ProductForm({
     () => brands.find((b) => b.id === selectedBrandId)?.key ?? '',
     [brands, selectedBrandId],
   )
-  const urunMarkasiGorunur = seciliMarkaAnahtari === 'alb-tarim'
+  // Üretici markası (ör. Mudese) her üründe girilebilir.
+  const urunMarkasiGorunur = true
   /** Alan gerçekten çiziliyor mu? Düz kategori düzeninde hiç çizilmiyor. */
   const urunMarkasiAlaniVar = hasHierarchy && urunMarkasiGorunur
 
@@ -562,11 +552,9 @@ export default function ProductForm({
               defaultValue={String(defaultValues.vatRate ?? 20)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              {/* %1 seçeneği kaldırıldı, yerine %0 geldi. Gübreler artık
-                  KDV'siz satıldığı için %10 satırındaki "Gübre, tohum, yem"
-                  ifadesi de %0'a taşındı — eski etiket yanlış yönlendiriyordu. */}
-              <option value="0">%0 — Gübre, tohum, yem vb. KDV&apos;siz girdiler</option>
-              <option value="10">%10 — İndirimli oran</option>
+              {/* Hazır giyim ve ayakkabıda oran %10, oyuncak ve aksesuarda
+                  genellikle %20. TODO(müşteri): mali müşavirle teyit. */}
+              <option value="10">%10 — Giyim, ayakkabı</option>
               <option value="20">%20 — Genel oran</option>
             </select>
           </div>
@@ -842,13 +830,6 @@ export default function ProductForm({
         </div>
       </section>
 
-      {/* Redirect için gizli alan — hangi markadaysak oraya dön */}
-      <input
-        type="hidden"
-        name="redirectBrand"
-        value={brands.find((b) => b.id === selectedBrandId)?.key ?? 'alb-tarim'}
-      />
-
       {/* ── Submit ── */}
       <div className="flex items-center justify-end gap-4">
         <span className="mr-auto text-xs text-gray-400">
@@ -856,7 +837,7 @@ export default function ProductForm({
           basmanız yeterli (açıklama alanı hariç).
         </span>
         <a
-          href={`/admin/${brands.find((b) => b.id === selectedBrandId)?.key ?? 'alb-tarim'}/urunler`}
+          href="/admin/urunler"
           className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
         >
           İptal

@@ -14,13 +14,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-const primaryBg = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-600' : 'bg-blue-600'
+const primaryBg = 'bg-brand-600'
 const primaryHoverBg =
-  ACTIVE_BRAND_KEY === 'alb-tarim' ? 'hover:bg-green-500' : 'hover:bg-blue-500'
+  'hover:bg-brand-500'
 const primaryLight =
-  ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+  'bg-brand-50 text-brand-700'
 const primaryBorder =
-  ACTIVE_BRAND_KEY === 'alb-tarim' ? 'border-green-200' : 'border-blue-200'
+  'border-brand-200'
 
 /**
  * Adreslerim.

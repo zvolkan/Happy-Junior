@@ -4,9 +4,9 @@ import { ACTIVE_BRAND_KEY } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import Icon, { type IconName } from '@/components/ui/Icon'
 
-const primaryBg = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-600' : 'bg-blue-600'
+const primaryBg = 'bg-brand-600'
 const primaryLight =
-  ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+  'bg-brand-50 text-brand-700'
 
 const LINKS: { href: string; label: string; icon: IconName }[] = [
   { href: '/hesabim', label: 'Hesabım', icon: 'kullanici' },

@@ -1,4 +1,4 @@
-import { BRANDS, COMPANY_NAME, SITE_CONFIG, KURULUS_YILI } from '@/lib/constants'
+import { BRAND, SITE_CONFIG } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
 
 /**
@@ -32,17 +32,13 @@ import type { BrandKey } from '@/lib/types'
  */
 const OG_BOYUT = { width: 1200, height: 630 }
 
-const OG_GORSELLERI: Record<BrandKey | 'grup', string> = {
-  grup: '/og/og-grup.png',
-  'alb-tarim': '/og/og-alb-tarim.png',
-  'alb-su-aritma': '/og/og-alb-su-aritma.png',
-}
+// TODO: 1200×630 paylaşım görseli `public/og/og.png` olarak eklenecek.
+const OG_GORSELI = '/og/og.png'
 
-/** Verilen marka için (ya da grup için) OG görsel tanımı. */
-export function ogGorseli(marka?: BrandKey) {
-  const yol = OG_GORSELLERI[marka ?? 'grup']
-  const ad = marka ? BRANDS[marka].name : COMPANY_NAME
-  return [{ url: yol, ...OG_BOYUT, alt: `${ad} — ${SITE_CONFIG.url.replace(/^https?:\/\//, '')}` }]
+export function ogGorseli(_marka?: BrandKey) {
+  return [
+    { url: OG_GORSELI, ...OG_BOYUT, alt: `${BRAND.name} — ${SITE_CONFIG.url.replace(/^https?:\/\//, '')}` },
+  ]
 }
 
 /**
@@ -71,7 +67,7 @@ export function paylasimMetadata(opts: {
     openGraph: {
       type: opts.type ?? ('website' as const),
       locale: 'tr_TR',
-      siteName: COMPANY_NAME,
+      siteName: BRAND.name,
       title: opts.title,
       description: opts.description,
       url: opts.url,
@@ -107,16 +103,15 @@ const MUTLAK = (yol: string) => new URL(yol, SITE_CONFIG.url).toString()
 export function yerelIsletmeVerisi() {
   return {
     '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
+    '@type': 'ClothingStore',
     '@id': MUTLAK('/#isletme'),
-    name: COMPANY_NAME,
-    description: BRANDS['alb-tarim'].description,
+    name: BRAND.name,
+    description: BRAND.description,
     url: SITE_CONFIG.url,
-    logo: MUTLAK('/og/og-grup.png'),
-    image: MUTLAK('/og/og-grup.png'),
+    logo: MUTLAK(OG_GORSELI),
+    image: MUTLAK(OG_GORSELI),
     email: SITE_CONFIG.email,
     telephone: SITE_CONFIG.phone,
-    foundingDate: String(KURULUS_YILI),
     priceRange: '₺₺',
     currenciesAccepted: 'TRY',
     areaServed: { '@type': 'Country', name: 'Türkiye' },
@@ -125,10 +120,9 @@ export function yerelIsletmeVerisi() {
       streetAddress: SITE_CONFIG.address,
       addressLocality: 'Anamur',
       addressRegion: 'Mersin',
-      postalCode: '33640',
       addressCountry: 'TR',
     },
-    hasMap: SITE_CONFIG.mapsUrl,
+    hasMap: SITE_CONFIG.mapsUrl || undefined,
     openingHoursSpecification: calismaSaatleri(),
     sameAs: Object.values(SITE_CONFIG.socialMedia),
   }
@@ -164,7 +158,7 @@ function calismaSaatleri() {
  * doğrudan bir arama kutusu koyabiliyor. Katalog sitelerinde tıklamayı
  * ölçülebilir biçimde artırıyor ve bedeli tek bir JSON bloğu.
  *
- * Yol `/alb-tarim/urunler?ara=` — gerçekten çalışan arama parametresi bu.
+ * Yol `/urunler?ara=` — gerçekten çalışan arama parametresi bu.
  * Çalışmayan bir yol vermek, Google'a kırık bir kutu göstertmek olur.
  */
 export function siteAramaVerisi() {
@@ -172,7 +166,7 @@ export function siteAramaVerisi() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     '@id': MUTLAK('/#site'),
-    name: COMPANY_NAME,
+    name: BRAND.name,
     url: SITE_CONFIG.url,
     inLanguage: 'tr-TR',
     publisher: { '@id': MUTLAK('/#isletme') },
@@ -180,7 +174,7 @@ export function siteAramaVerisi() {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: MUTLAK('/alb-tarim/urunler?ara={search_term_string}'),
+        urlTemplate: MUTLAK('/urunler?ara={search_term_string}'),
       },
       'query-input': 'required name=search_term_string',
     },

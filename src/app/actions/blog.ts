@@ -103,10 +103,8 @@ export async function createBlogPost(formData: FormData): Promise<BlogActionResu
     const data = parseForm(formData)
     const post = await prisma.blogPost.create({ data, select: { id: true } })
 
-    revalidatePath('/admin/alb-tarim/blog')
-revalidatePath('/admin/alb-su-aritma/blog')
-    revalidatePath('/alb-tarim/blog')
-    revalidatePath('/alb-su-aritma/blog')
+    revalidatePath('/admin/blog')
+    revalidatePath('/blog')
 
     return { ok: true, id: post.id, message: 'Yazı oluşturuldu.' }
   } catch (error) {
@@ -135,10 +133,8 @@ export async function updateBlogPost(id: string, formData: FormData): Promise<Bl
       },
     })
 
-    revalidatePath('/admin/alb-tarim/blog')
-revalidatePath('/admin/alb-su-aritma/blog')
-    revalidatePath('/alb-tarim/blog')
-    revalidatePath('/alb-su-aritma/blog')
+    revalidatePath('/admin/blog')
+    revalidatePath('/blog')
 
     return { ok: true, id, message: 'Yazı güncellendi.' }
   } catch (error) {
@@ -153,10 +149,8 @@ export async function deleteBlogPost(id: string): Promise<BlogActionResult> {
   try {
     await prisma.blogPost.delete({ where: { id } })
 
-    revalidatePath('/admin/alb-tarim/blog')
-revalidatePath('/admin/alb-su-aritma/blog')
-    revalidatePath('/alb-tarim/blog')
-    revalidatePath('/alb-su-aritma/blog')
+    revalidatePath('/admin/blog')
+    revalidatePath('/blog')
 
     return { ok: true, id, message: 'Yazı silindi.' }
   } catch (error) {
@@ -185,10 +179,8 @@ export async function toggleBlogPublished(id: string): Promise<BlogActionResult>
       },
     })
 
-    revalidatePath('/admin/alb-tarim/blog')
-revalidatePath('/admin/alb-su-aritma/blog')
-    revalidatePath('/alb-tarim/blog')
-    revalidatePath('/alb-su-aritma/blog')
+    revalidatePath('/admin/blog')
+    revalidatePath('/blog')
 
     return { ok: true, id, message: next ? 'Yazı yayına alındı.' : 'Yazı taslağa çekildi.' }
   } catch (error) {

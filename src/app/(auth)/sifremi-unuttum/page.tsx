@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import GrupLogo from '@/components/ui/GrupLogo'
+import MagazaLogo from '@/components/ui/MagazaLogo'
 import { requestPasswordReset } from '@/app/actions/auth'
 import Icon from '@/components/ui/Icon'
 
@@ -22,10 +22,7 @@ export default async function SifremiUnuttumPage({
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4">
-            {/* Eskiden "BG" harfleri yazıyordu; dört auth sayfasında da
-                kopyalanmıştı. Artık markanın tam kilidi (dağ + yazı), tek
-                bileşenden. Yazı logonun içinde olduğu için ayrıca metin yok. */}
-            <GrupLogo />
+            <MagazaLogo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Şifrenizi mi Unuttunuz?</h1>
           <p className="text-gray-500 text-sm mt-1">

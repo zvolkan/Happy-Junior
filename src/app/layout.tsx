@@ -4,14 +4,12 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import '@/styles/animations.css'
 import '@/styles/brand.css'
-import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY, COMPANY_NAME } from '@/lib/constants'
+import { BRAND, SITE_CONFIG } from '@/lib/constants'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import PageTransition from '@/components/layout/PageTransition'
 import ScrollProgress from '@/components/layout/ScrollProgress'
-import BrandSync from '@/components/layout/BrandSync'
-import { brandFromPath, type ActiveBrand } from '@/lib/brand-path'
 import CookieConsent from '@/components/layout/CookieConsent'
 import { Toaster } from 'react-hot-toast'
 import { jsonLdScript } from '@/lib/sanitize'
@@ -23,8 +21,7 @@ import { paylasimMetadata, yerelIsletmeVerisi, siteAramaVerisi } from '@/lib/seo
  * Türkçenin ı, ğ, ş, İ, Ğ, Ş harfleri Inter'in `latin` alt kümesinde YOK;
  * `latin-ext` içindeler. Yalnızca `latin` yüklendiğinde tarayıcı bu harfleri
  * yazı tipinde bulamayıp sistem yazı tipine düşüyordu. Sonuç, aynı kelimenin
- * iki farklı yazı tipiyle çizilmesi: "Bayırlıoğlu" kelimesinde B-a-y-r-l-o-l-u
- * Inter'den, ı ve ğ başka bir yazı tipinden geliyordu. Harf genişlikleri ve
+ * iki farklı yazı tipiyle çizilmesi. Harf genişlikleri ve
  * özellikle alt kuyruk derinlikleri tutmadığı için satır kutusuna sığmıyor,
  * kuyruklar kesik görünüyordu.
  *
@@ -37,64 +34,25 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  // metadataBase olmadan göreli OG görsel yolları çözülmüyor ve WhatsApp /
-  // Facebook paylaşımlarında link önizlemesi görselsiz çıkıyordu.
   metadataBase: new URL(SITE_CONFIG.url),
-  // Kurumsal ve hukuki sayfalar bu şablonu kullanıyor; marka sayfaları
-  // kendi metadata'sıyla eziyor. Burada marka adı yazınca gizlilik/kullanım
-  // koşulları başlıklarında "ALB Tarım" çıkıyordu.
-  title: { template: `%s | ${COMPANY_NAME}`, default: COMPANY_NAME },
+  title: { template: `%s | ${BRAND.name}`, default: `${BRAND.name} — Bebek ve Çocuk Giyim, Anamur` },
   description: BRAND.description,
-  keywords: ACTIVE_BRAND_KEY === 'alb-tarim'
-    // ── SEO anahtar kelimeleri: neyin OLMADIĞINA dikkat ──────────────────
-    //
-    // 'zirai ilaç' ve 'tarım ilaçları' KALDIRILDI ve bir daha eklenmemeli.
-    // Zirai ilacın internetten satışı mevzuat gereği yasak; satmadığınız ve
-    // satamayacağınız bir ürün için arama trafiği çekmek yalnızca yanıltıcı
-    // değil, denetimde aleyhe delil olur.
-    //
-    // 'tarım ekipmanları' da kaldırıldı: ekipman satışı yok. ALB Tarım'ın
-    // sattığı tek ürün grubu gübre; yanında zirai danışmanlık veriliyor.
-    ? ['alb tarım', 'gübre', 'organik gübre', 'damla sulama gübresi', 'yaprak gübresi', 'zirai danışmanlık']
-    : ['albsu', 'su arıtma', 'klima', 'su arıtma cihazı', 'filtre', 'yedek parça'],
+  keywords: ['happy junior', 'bebek giyim', 'çocuk giyim', 'bebek kıyafeti', 'çocuk ayakkabı', 'anamur', 'oyuncak'],
   // Paylaşım görseli ve Twitter kartı `src/lib/seo.ts`ten geliyor.
-  //
-  // Daha önce `openGraph` burada elle yazılıydı ama `images` alanı YOKTU:
-  // metadataBase tam da OG görseli için eklenmiş, görselin kendisi hiç
-  // konmamıştı. Sitenin her paylaşımı görselsiz çıkıyordu. `twitter` bloğu
-  // ise hiç yoktu — X, `summary_large_image` olmadan küçük kenar görseli
-  // basıyor.
   ...paylasimMetadata({
-    title: COMPANY_NAME,
+    title: BRAND.name,
     description: BRAND.description,
     url: SITE_CONFIG.url,
   }),
-  // Kök sayfa kendi kanonik adresini bildirmiyordu. Site hem `/` hem
-  // `/alb-tarim` üzerinden benzer içerik sunduğu için bu alan boş kalınca
-  // hangisinin asıl olduğunu Google kendi seçiyordu.
   alternates: { canonical: '/' },
   robots: { index: true, follow: true },
 }
 
-/**
- * İlk boyama için sunucu tarafında markayı belirler.
- *
- * DİKKAT: Bu değer YALNIZCA ilk yüklemede geçerli. Next.js kök düzeni rotalar
- * arasında paylaştığı ve istemci tarafı gezinmede yeniden render etmediği için
- * sonraki geçişlerde `<BrandSync />` bileşeni niteliği güncelliyor. İkisi
- * birlikte çalışmalı — biri eksikse renkler ya sıçrar ya da takılı kalır.
- */
-async function resolveBrand(): Promise<ActiveBrand> {
-  const pathname = (await headers()).get('x-pathname') ?? ''
-  return brandFromPath(pathname)
-}
-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const brand = await resolveBrand()
   const yonetimPaneli = ((await headers()).get('x-pathname') ?? '').startsWith('/admin')
 
   return (
-    <html lang="tr" data-brand={brand} className={inter.variable}>
+    <html lang="tr" className={inter.variable}>
       <body>
         {/* Klavye kullanıcıları için: sekme ile odaklanınca görünür olur */}
         <a
@@ -121,7 +79,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           dangerouslySetInnerHTML={{ __html: jsonLdScript(siteAramaVerisi()) }}
         />
         {/* Yönetici paneli mağaza kabuğunu kullanmıyor.
-            Bu ayrım olmadan panelde marka değiştirici, sepet, arama, yasal
+            Bu ayrım olmadan panelde sepet, arama, yasal
             künyeli altbilgi, WhatsApp butonu ve çerez bandı da görünüyordu;
             mobil panelde ekranın yarısını kaplıyordu. */}
         {yonetimPaneli ? (
@@ -130,7 +88,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </main>
         ) : (
           <>
-            <BrandSync />
             <ScrollProgress />
             <Header />
             <main id="ana-icerik" tabIndex={-1}>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, Fragment } from 'react'
 import Link from 'next/link'
-import Icon from '@/components/ui/Icon'
 import { BRANDS } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
 
@@ -19,7 +18,7 @@ interface Props {
  * state'ine bağlıydı: sunucudan `opacity-0` geliyor, tarayıcıda 100 ms'lik bir
  * `setTimeout` çalışınca görünür oluyorlardı. Yani hero'nun tamamı JavaScript'e
  * bağımlıydı. Hidrasyon gecikirse, bir hata sınırı devreye girerse ya da JS hiç
- * çalışmazsa sayfa tamamen boş kalıyordu — görsel QA'da `/alb-tarim` sayfasının
+ * çalışmazsa sayfa tamamen boş kalıyordu — görsel QA'da `/` sayfasının
  * "soluk" render olmasının sebebi buydu.
  *
  * Artık giriş animasyonu saf CSS (`anim-fade-up`, animations.css). `both` dolgu
@@ -29,7 +28,6 @@ interface Props {
  */
 export default function BrandHeroSection({ brandKey }: Props) {
   const cfg = BRANDS[brandKey]
-  const isAlbSu = brandKey === 'alb-su-aritma'
 
   const [videoSrc, setVideoSrc]     = useState<string | null>(null)
   const [videoError, setVideoError] = useState(false)
@@ -101,7 +99,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
             Poster zaten videonun birinci karesi, yani hareket kapalıyken
             görülen sahne, açıkken videonun başladığı sahneyle aynı.
 
-            Görsel yoksa (ör. Alb Su'nun posteri henüz eklenmedi) `<img>`
+            Görsel yoksa `<img>`
             boş render edilir ve altındaki degrade görünür — kırık simge
             çıkmaması için `alt` bilerek boş. */}
         {cfg.poster && (!videoSrc || videoError) && (
@@ -222,27 +220,9 @@ export default function BrandHeroSection({ brandKey }: Props) {
                 'anim-fade-up anim-delay-400',
               ].join(' ')}
             >
-              {isAlbSu ? (
                 <>
                   <Link
-                    href={`/${brandKey}/urunler?kullanim=ev`}
-                    className="inline-flex items-center justify-center gap-2 bg-white text-blue-900 font-bold text-base sm:text-lg px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
-                  >
-                    <Icon name="ev" className="w-5 h-5" />
-                    Eviniz İçin
-                  </Link>
-                  <Link
-                    href={`/${brandKey}/urunler?kullanim=is-yeri`}
-                    className={`inline-flex items-center justify-center gap-2 border-2 ${outlineBtn} text-white font-semibold text-base sm:text-lg px-8 py-4 rounded-2xl backdrop-blur-sm hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
-                  >
-                    <Icon name="bina" className="w-5 h-5" />
-                    İş Yeriniz İçin
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href={`/${brandKey}${cfg.cta.href}`}
+                    href={cfg.cta.href}
                     className={`inline-flex items-center justify-center gap-2 ${primaryBtn} font-bold text-base sm:text-lg px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
                   >
                     {cfg.cta.label}
@@ -251,13 +231,12 @@ export default function BrandHeroSection({ brandKey }: Props) {
                     </svg>
                   </Link>
                   <Link
-                    href={`/${brandKey}${cfg.ctaSecondary.href}`}
+                    href={cfg.ctaSecondary.href}
                     className={`inline-flex items-center justify-center gap-2 border-2 ${outlineBtn} text-white font-semibold text-base sm:text-lg px-8 py-4 rounded-2xl backdrop-blur-sm hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
                   >
                     {cfg.ctaSecondary.label}
                   </Link>
                 </>
-              )}
             </div>
 
             {/* İstatistikler */}

@@ -152,7 +152,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: 'bayirlioglu-cart',
+      name: 'happyjunior-cart',
       // Yalnızca sepet içeriği saklanır; fonksiyonlar ve hydration bayrağı değil
       partialize: (state) => ({ items: state.items }),
       onRehydrateStorage: () => (state) => state?.setHydrated(),

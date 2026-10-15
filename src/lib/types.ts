@@ -1,18 +1,21 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// TEMEL TİPLER — Bayirlioglu E-Commerce
+// TEMEL TİPLER — Happy Junior E-Ticaret
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Desteklenen iki marka */
-export type BrandKey = 'alb-tarim' | 'alb-su-aritma';
+/**
+ * Mağaza anahtarı. Kod ALB'nin çok markalı yapısından geldiği için bazı
+ * fonksiyonlar hâlâ bir marka parametresi alıyor; Happy Junior'da tek değer var.
+ */
+export type BrandKey = 'happy-junior';
 
 // ─── MARKA ───────────────────────────────────────────────────────────────────
 
 export interface BrandColors {
-  primary: string;          // bg-green-600 | bg-blue-600
-  primaryHover: string;     // hover:bg-green-500 | hover:bg-blue-500
-  primaryText: string;      // text-green-600 | text-blue-600
-  primaryLight: string;     // bg-green-50 | bg-blue-50
-  primaryBorder: string;    // border-green-200 | border-blue-200
+  primary: string;
+  primaryHover: string;
+  primaryText: string;
+  primaryLight: string;
+  primaryBorder: string;
   gradientOverlay: string;  // Hero gradient sınıfı
   fallbackGradient: string; // Video yoksa arka plan
   logoBg: string;           // Logo arka planı
@@ -111,7 +114,7 @@ export interface Product {
   rating: number;
   reviewCount: number;
   sku: string;
-  productBrand?: string;   // TİMAC AGRO, ALB TARIM, FERTIVAL vb.
+  productBrand?: string;   // Ürünün üretici markası (ör. Mudese)
   tags?: string[];
   createdAt: string;
   updatedAt: string;

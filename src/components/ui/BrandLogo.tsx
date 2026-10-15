@@ -62,12 +62,11 @@ const IKON_OLCU: Record<Boyut, string> = {
 
 /** Logosu olmayan markalar için eski genel ikonlar. */
 const YEDEK_IKON: Record<BrandKey, IconName> = {
-  'alb-tarim': 'filiz',
-  'alb-su-aritma': 'damla',
+  'happy-junior': 'yildiz',
 }
 
 interface Props {
-  brand: BrandKey
+  brand?: BrandKey
   boyut?: Boyut
   /**
    * Logo YOKKEN ikonun arkasına çizilecek renkli kutunun sınıfları
@@ -83,7 +82,7 @@ interface Props {
 }
 
 export default function BrandLogo({
-  brand,
+  brand = 'happy-junior',
   boyut = 'md',
   kutuSinifi,
   className = '',

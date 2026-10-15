@@ -43,10 +43,8 @@ const ADMIN_COOKIE = 'admin_session'
  * ucuz.
  */
 async function siparisYollariniTazele(orderId: string): Promise<void> {
-  revalidatePath('/admin/alb-tarim/siparisler')
-  revalidatePath('/admin/alb-su-aritma/siparisler')
-  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
-  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+  revalidatePath('/admin/siparisler')
+  revalidatePath(`/admin/siparisler/${orderId}`)
   revalidatePath('/hesabim/siparislerim')
   revalidatePath(`/hesabim/siparislerim/${orderId}`)
   revalidatePath('/hesabim')
@@ -529,9 +527,7 @@ export async function markOrderManuallyRefunded(
 // ─── Form kayıtları ──────────────────────────────────────────────────────────
 
 /**
- * @param kapsam 'alb-tarim' | 'alb-su-aritma' → o markanın mesajları.
- *               'belirtilmemis' → grup iletişim formundan gelen, markası boş
- *               olanlar. Verilmezse hepsi.
+ * Tek mağaza: `kapsam` parametresi eski imzayla uyum için duruyor.
  */
 export async function getContactMessages(options?: {
   unreadOnly?: boolean
@@ -541,8 +537,6 @@ export async function getContactMessages(options?: {
 
   const where: Record<string, unknown> = {}
   if (options?.unreadOnly) where.isRead = false
-  if (options?.kapsam === 'belirtilmemis') where.brandKey = null
-  else if (options?.kapsam) where.brandKey = options.kapsam
 
   return prisma.contactMessage.findMany({
     where: Object.keys(where).length ? where : undefined,
@@ -555,8 +549,6 @@ export async function getUnreadMessageCount(kapsam?: string): Promise<number> {
   await requireAdmin()
 
   const where: Record<string, unknown> = { isRead: false }
-  if (kapsam === 'belirtilmemis') where.brandKey = null
-  else if (kapsam) where.brandKey = kapsam
 
   return prisma.contactMessage.count({ where }).catch(() => 0)
 }
@@ -564,53 +556,9 @@ export async function getUnreadMessageCount(kapsam?: string): Promise<number> {
 export async function markMessageRead(id: string, isRead: boolean) {
   await requireAdmin()
   await prisma.contactMessage.update({ where: { id }, data: { isRead } })
-  revalidatePath('/admin/alb-tarim/mesajlar')
-revalidatePath('/admin/alb-su-aritma/mesajlar')
-  revalidatePath('/admin/belirtilmemis/mesajlar')
+  revalidatePath('/admin/mesajlar')
 }
 
-/**
- * Başvuru formunda "Her İkisi" seçeneği var; o başvurular iki markanın
- * listesinde de görünür, yoksa birinde çıkıp diğerinde kaybolurlardı.
- */
-function bayiKapsamFiltresi(kapsam?: string): Record<string, unknown> | undefined {
-  if (!kapsam) return undefined
-  if (kapsam === 'belirtilmemis') {
-    return { OR: [{ brandInterest: null }, { brandInterest: '' }] }
-  }
-  return { brandInterest: { in: [kapsam, 'her-ikisi'] } }
-}
-
-export async function getDealerApplications(kapsam?: string) {
-  await requireAdmin()
-
-  return prisma.dealerApplication.findMany({
-    where: bayiKapsamFiltresi(kapsam),
-    orderBy: { createdAt: 'desc' },
-    take: 200,
-  })
-}
-
-export async function getNewDealerCount(kapsam?: string): Promise<number> {
-  await requireAdmin()
-
-  const kapsamFiltre = bayiKapsamFiltresi(kapsam)
-  return prisma.dealerApplication
-    .count({ where: { status: 'new', ...(kapsamFiltre ?? {}) } })
-    .catch(() => 0)
-}
-
-export async function updateDealerStatus(id: string, status: string) {
-  await requireAdmin()
-
-  const allowed = ['new', 'contacted', 'approved', 'rejected']
-  if (!allowed.includes(status)) throw new Error('Geçersiz durum')
-
-  await prisma.dealerApplication.update({ where: { id }, data: { status } })
-  revalidatePath('/admin/alb-tarim/bayi-basvurulari')
-revalidatePath('/admin/alb-su-aritma/bayi-basvurulari')
-  revalidatePath('/admin/belirtilmemis/bayi-basvurulari')
-}
 
 // NOT: Buradaki yerel `appendOrderNote` kopyası KALDIRILDI.
 //

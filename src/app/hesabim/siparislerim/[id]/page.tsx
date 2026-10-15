@@ -89,7 +89,6 @@ export default async function SiparisDetayPage({ params }: Props) {
   if (!order) notFound()
 
   const status = STATUS_MAP[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700 border-gray-200', icon: 'uyari' as IconName }
-  const isAlbTarim = order.brand.key === 'alb-tarim'
   // Karar `src/lib/order-cancel.ts`'te — liste sayfası ve `cancelOrder` da
   // aynı fonksiyonu kullanıyor.
   const cancellable = siparisIptalEdilebilir(order)
@@ -167,11 +166,8 @@ export default async function SiparisDetayPage({ params }: Props) {
 
           {/* Action buttons row */}
           <div className="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3 bg-gray-50">
-            <span className="text-xs text-gray-500 mr-1">Satıcı: <strong className="text-gray-700">{order.brand.name}</strong></span>
             <div className="flex flex-wrap gap-2 ml-auto">
-              {isAlbTarim && (
-                <RepeatOrderButton orderId={order.id} brandKey={order.brand.key as BrandKey} />
-              )}
+              <RepeatOrderButton orderId={order.id} brandKey={order.brand.key as BrandKey} />
             </div>
           </div>
         </div>

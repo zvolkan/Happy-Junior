@@ -9,8 +9,8 @@ import { ACTIVE_BRAND_KEY } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import type { Product, BrandKey } from '@/lib/types'
 
-const primaryBg = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-600' : 'bg-blue-600'
-const primaryHover = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'hover:bg-green-500' : 'hover:bg-blue-500'
+const primaryBg = 'bg-brand-600'
+const primaryHover = 'hover:bg-brand-500'
 
 interface FavoriteProduct {
   id: string

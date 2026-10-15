@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { headers } from 'next/headers'
 import { rateLimit, clientIp } from '@/lib/rate-limit'
 import { prisma } from '@/lib/db'
-import { notifyContactMessage, notifyDealerApplication } from '@/lib/email/form-notify'
+import { notifyContactMessage } from '@/lib/email/form-notify'
 
 /**
  * İletişim ve bayi başvuru formları.
@@ -105,81 +105,6 @@ export async function submitContactMessage(input: ContactInput): Promise<FormRes
     return {
       ok: false,
       error: 'Mesajınız kaydedilemedi. Lütfen tekrar deneyin veya telefonla ulaşın.',
-    }
-  }
-}
-
-// ─── Bayi başvurusu ──────────────────────────────────────────────────────────
-
-const dealerSchema = z.object({
-  companyName: z.string().trim().min(2, 'Firma adı gerekli').max(200),
-  firstName: z.string().trim().min(2, 'Ad en az 2 karakter olmalıdır').max(100),
-  lastName: z.string().trim().min(2, 'Soyad en az 2 karakter olmalıdır').max(100),
-  email: z.string().trim().email('Geçerli bir e-posta adresi girin').max(255),
-  phone: z.string().trim().min(10, 'Geçerli bir telefon numarası girin').max(30),
-  city: z.string().trim().min(2, 'İl seçin').max(100),
-  district: z.string().trim().max(100).optional().or(z.literal('')),
-  brandInterest: z.string().trim().max(60).optional().or(z.literal('')),
-  businessType: z.string().trim().max(80).optional().or(z.literal('')),
-  annualRevenue: z.string().trim().max(80).optional().or(z.literal('')),
-  message: z.string().trim().max(5000).optional().or(z.literal('')),
-  website: z.string().max(0).optional().or(z.literal('')),
-})
-
-export type DealerInput = z.input<typeof dealerSchema>
-
-export async function submitDealerApplication(input: DealerInput): Promise<FormResult> {
-  const parsed = dealerSchema.safeParse(input)
-
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Form bilgileri geçersiz.' }
-  }
-
-  const data = parsed.data
-
-  if (data.website) return { ok: true }
-
-  if (!(await formSiniri('bayi-basvurusu'))) {
-    return { ok: false, error: 'Çok fazla başvuru gönderdiniz. Lütfen birkaç dakika sonra deneyin.' }
-  }
-
-  try {
-    await prisma.dealerApplication.create({
-      data: {
-        companyName: data.companyName,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email.toLowerCase(),
-        phone: data.phone,
-        city: data.city,
-        district: data.district || null,
-        brandInterest: data.brandInterest || null,
-        businessType: data.businessType || null,
-        annualRevenue: data.annualRevenue || null,
-        message: data.message || null,
-      },
-    })
-
-    await notifyDealerApplication({
-      companyName: data.companyName,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email.toLowerCase(),
-      phone: data.phone,
-      city: data.city,
-      district: data.district,
-      brandInterest: data.brandInterest,
-      businessType: data.businessType,
-      annualRevenue: data.annualRevenue,
-      message: data.message,
-    })
-
-    return { ok: true }
-  } catch (error) {
-    console.error('[form] bayi başvurusu kaydedilemedi:', error)
-    return {
-      ok: false,
-      error: 'Başvurunuz kaydedilemedi. Lütfen tekrar deneyin veya telefonla ulaşın.',
     }
   }
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import GrupLogo from '@/components/ui/GrupLogo'
+import MagazaLogo from '@/components/ui/MagazaLogo'
 import GoogleGiris from '@/components/auth/GoogleGiris'
 import { signUp, signInWithGoogle } from '@/app/actions/auth'
 
@@ -25,10 +25,7 @@ export default async function KayitPage({
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4">
-            {/* Eskiden "BG" harfleri yazıyordu; dört auth sayfasında da
-                kopyalanmıştı. Artık markanın tam kilidi (dağ + yazı), tek
-                bileşenden. Yazı logonun içinde olduğu için ayrıca metin yok. */}
-            <GrupLogo />
+            <MagazaLogo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Hesap Oluşturun</h1>
           <p className="text-gray-500 text-sm mt-1">Sipariş takibi ve hızlı alışveriş için kayıt olun</p>
@@ -43,7 +40,7 @@ export default async function KayitPage({
 
           {/*
             Google ile kayıt — giriş sayfasıyla aynı akış.
-            Onay ekranında "Bayırlıoğlu" adı, logosu ve kendi alan adımız
+            Onay ekranında mağaza adı, logosu ve kendi alan adımız
             görünüyor. Ayrıntı: components/auth/GoogleGiris.tsx
           */}
           <GoogleGiris

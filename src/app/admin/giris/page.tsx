@@ -11,7 +11,7 @@ export default async function AdminGirisPage({
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
         <h1 className="text-2xl font-bold text-gray-800 text-center mb-2">Admin Girişi</h1>
-        <p className="text-sm text-gray-500 text-center mb-8">Bayırlıoğlu Yönetim Paneli</p>
+        <p className="text-sm text-gray-500 text-center mb-8">Happy Junior Yönetim Paneli</p>
 
         {error && (
           <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">

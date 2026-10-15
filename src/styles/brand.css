@@ -1,66 +1,29 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    MARKA RENK DEĞİŞKENLERİ
    ───────────────────────────────────────────────────────────────────────────
-   Aktif marka <html data-brand="..."> ile belirleniyor (src/app/layout.tsx,
-   middleware'in gönderdiği x-pathname başlığından okuyor).
-
-   Sayfalarda `bg-brand-600`, `text-brand-700` gibi sınıflar kullanılıyor;
-   hangi markadaysanız doğru renk otomatik geliyor. Önceden her yerde
-   `isAlbSu ? 'bg-blue-600' : 'bg-green-600'` koşulu yazılıyordu.
+   Sayfalarda `bg-brand-600`, `text-brand-700` gibi sınıflar kullanılıyor.
+   Mağazanın rengini değiştirmek için yalnızca aşağıdaki değerleri değiştirin.
 
    Değerler boşlukla ayrılmış RGB — Tailwind'in `/50` gibi saydamlık
    eklerinin çalışması için bu biçim şart.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-:root,
-[data-brand='alb-tarim'] {
-  /* Koyu Orman */
-  --brand-50: 240 253 244;
-  --brand-100: 220 252 231;
-  --brand-200: 187 247 208;
-  --brand-400: 74 222 128;
-  --brand-500: 22 163 74;
-  --brand-600: 22 101 52;
-  --brand-700: 20 83 45;
-  --brand-800: 11 64 35;
-  --brand-900: 5 46 22;
-  --brand-accent: 163 230 53;
+:root {
+  /* Happy Junior — sıcak kakao/bej (Instagram paylaşımlarının toprak tonları) */
+  --brand-50: 250 246 241;
+  --brand-100: 243 234 222;
+  --brand-200: 230 214 193;
+  --brand-400: 196 160 120;
+  --brand-500: 166 124 84;
+  --brand-600: 133 94 60;
+  --brand-700: 107 74 47;
+  --brand-800: 82 57 37;
+  --brand-900: 56 39 26;
+  /* Adaçayı yeşili vurgu */
+  --brand-accent: 143 170 139;
 
   /* Hero ve büyük yüzeylerde kullanılan yumuşak ışık lekesi */
-  --brand-glow: 74 222 128;
-}
-
-[data-brand='alb-su-aritma'] {
-  /* Derin Su */
-  --brand-50: 236 254 255;
-  --brand-100: 207 250 254;
-  --brand-200: 165 243 252;
-  --brand-400: 34 211 238;
-  --brand-500: 8 145 178;
-  --brand-600: 21 94 117;
-  --brand-700: 22 78 99;
-  --brand-800: 14 63 82;
-  --brand-900: 8 51 68;
-  --brand-accent: 103 232 249;
-
-  --brand-glow: 34 211 238;
-}
-
-/* Bayırlıoğlu Grup ana sayfası kendi renklerini kullanıyor; marka
-   değişkenleri burada nötr kalsın ki yanlışlıkla tarım yeşili sızmasın. */
-[data-brand='grup'] {
-  --brand-50: 250 250 250;
-  --brand-100: 244 244 245;
-  --brand-200: 228 228 231;
-  --brand-400: 161 161 170;
-  --brand-500: 82 82 91;
-  --brand-600: 63 63 70;
-  --brand-700: 39 39 42;
-  --brand-800: 24 24 27;
-  --brand-900: 9 9 11;
-  --brand-accent: 161 161 170;
-
-  --brand-glow: 161 161 170;
+  --brand-glow: 230 214 193;
 }
 
 /* ───────────────────────────────────────────────────────────────────────────

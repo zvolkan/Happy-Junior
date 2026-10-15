@@ -5,7 +5,7 @@ import { headers } from 'next/headers'
 import { verifyAdminToken } from '@/lib/admin-auth'
 
 export const metadata: Metadata = {
-  title: 'Admin Paneli — Bayırlıoğlu',
+  title: 'Yönetim Paneli — Happy Junior',
   robots: 'noindex, nofollow',
 }
 

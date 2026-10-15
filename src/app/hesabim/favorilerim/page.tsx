@@ -15,9 +15,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-const primaryBg = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-600' : 'bg-blue-600'
-const primaryHover = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'hover:bg-green-500' : 'hover:bg-blue-500'
-const primaryColor = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'text-green-600' : 'text-blue-600'
+const primaryBg = 'bg-brand-600'
+const primaryHover = 'hover:bg-brand-500'
+const primaryColor = 'text-brand-600'
 
 function formatPrice(value: unknown): string {
   return Number(value).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })
@@ -102,7 +102,7 @@ export default async function FavorilerimPage() {
                   const hasDiscount =
                     product.salePrice !== null &&
                     Number(product.salePrice) < Number(product.price)
-                  const href = `/${product.brand.key}/urunler/${product.slug}`
+                  const href = `/urunler/${product.slug}`
 
                   return (
                     <div

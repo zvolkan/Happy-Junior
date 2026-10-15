@@ -5,7 +5,7 @@ import { SATICI } from '@/lib/legal'
 export const metadata: Metadata = {
   title: 'İptal ve İade Koşulları',
   description:
-    'Bayırlıoğlu iptal, iade, cayma hakkı ve tüketici hakları koşulları. Mesafeli Sözleşmeler Yönetmeliği kapsamında hazırlanmıştır.',
+    'Happy Junior iptal, iade, cayma hakkı ve tüketici hakları koşulları. Mesafeli Sözleşmeler Yönetmeliği kapsamında hazırlanmıştır.',
   alternates: { canonical: '/iade-politikasi' },
 }
 
@@ -111,7 +111,7 @@ export default function IadePolitikasiPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
         <div className="mb-10">
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-2">
-            Bayırlıoğlu
+            {SATICI.unvan}
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
             İptal ve İade Koşulları

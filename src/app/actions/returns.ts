@@ -121,8 +121,7 @@ export async function createReturnRequest(
     await notifyReturnRequested(request.id)
 
     revalidatePath(`/hesabim/siparislerim/${orderId}`)
-    revalidatePath('/admin/alb-tarim/iadeler')
-revalidatePath('/admin/alb-su-aritma/iadeler')
+    revalidatePath('/admin/iadeler')
 
     return {
       ok: true,
@@ -214,8 +213,7 @@ export async function decideReturnRequest(
 
     await notifyReturnDecision(requestId)
 
-    revalidatePath('/admin/alb-tarim/iadeler')
-revalidatePath('/admin/alb-su-aritma/iadeler')
+    revalidatePath('/admin/iadeler')
     return {
       ok: true,
       message:

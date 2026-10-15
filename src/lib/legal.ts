@@ -13,6 +13,8 @@ import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from './checkout'
  * satıcı bilgileri `constants.ts`ten okunuyor. Birini değiştirdiğinizde
  * sözleşme metni de kendiliğinden güncelleniyor.
  *
+ * TODO(müşteri): Yayından önce metinler mali müşavir/hukukçu ile gözden geçirilmeli.
+ *
  * ÖNEMLİ: Metinde değişiklik yaptığınızda `CONTRACT_VERSION`u artırın
  * (src/app/api/odeme/initialize/route.ts). Hangi müşterinin hangi sürümü
  * onayladığı siparişe yazılıyor ve uyuşmazlıkta ispat aracı bu.
@@ -26,28 +28,26 @@ import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from './checkout'
 // footer'daki yasal künye hepsi buradan besleniyor.
 //
 // `unvan` bilerek `COMPANY_NAME`den ayrıldı: o sabit sitede kullanılan kısa
-// ticari isim ("Bayırlıoğlu"), yönetmelik ise ticaret sicilindeki TAM resmî
+// ticari isim, yönetmelik ise ticaret sicilindeki TAM resmî
 // unvanı istiyor. İkisi farklı şeyler; kısaltmayın.
 
+// TODO(müşteri): vergi levhasındaki unvan, vergi dairesi/no ve (varsa) MERSİS no.
+// Şahıs işletmesinde MERSİS no yoktur; boş bırakılırsa künyede gösterilmez.
 export const SATICI = {
-  unvan: 'BAYIRLIOĞLU TARIM İNŞAAT OTOMOTİV İTHALAT İHRACAT PAZARLAMA SANAYİ VE TİCARET LİMİTED ŞİRKETİ',
-  mersis: '0153122147800001',
-  vergiDairesi: 'ANAMUR VERGİ DAİRESİ',
-  vergiNo: '1531221478',
+  unvan: 'Happy Junior',
+  mersis: '',
+  vergiDairesi: '',
+  vergiNo: '',
   adres: SITE_CONFIG.address,
   telefon: SITE_CONFIG.phone,
   eposta: SITE_CONFIG.email,
   /** Cayma hakkı kapsamındaki iadelerin gönderileceği adres */
   iadeAdresi: SITE_CONFIG.address,
   /**
-   * ETBİS kaydı tamamlandı (beyan: 2026).
-   *
-   * Footer eskiden KOŞULSUZ olarak "Bu site ETBİS'e kayıtlıdır." diyordu.
-   * Kayıt yapılmadıysa bu yanlış beyandır ve idari yaptırıma açıktır; bu yüzden
-   * cümle bu bayrağa bağlandı. Kayıt bir gün düşerse burayı `false` yapın,
-   * cümle kendiliğinden kaybolur.
+   * ETBİS kaydı yapıldı mı? Footer'daki "Bu site ETBİS'e kayıtlıdır." cümlesi
+   * buna bağlı; kayıt yapılmadan true yapmak yanlış beyan olur.
    */
-  etbisKayitli: true,
+  etbisKayitli: false,
 } as const
 
 /**
@@ -58,7 +58,6 @@ export const SATICI = {
  */
 const EKSIK_ALANLAR = (
   [
-    ['MERSİS no', SATICI.mersis],
     ['vergi dairesi', SATICI.vergiDairesi],
     ['vergi no', SATICI.vergiNo],
   ] as const
@@ -111,7 +110,7 @@ export const ON_BILGILENDIRME = `ÖN BİLGİLENDİRME FORMU
 ALICI: Mal veya hizmeti ticari ya da mesleki olmayan amaçlarla edinen, kullanan veya yararlanan gerçek kişiyi,
 SATICI: Aşağıda künyesi verilen firmayı,
 SİTE: ${SITE_DOMAIN} adresindeki internet sitesini,
-ÜRÜN: Site üzerinden satışa sunulan ALB Tarım ve Alb Su Teknolojileri markalı malları
+ÜRÜN: Site üzerinden satışa sunulan bebek ve çocuk giyim ürünleri, ayakkabı, araç-gereç, aksesuar ve oyuncakları
 ifade eder.
 
 3. SATICI BİLGİLERİ
@@ -121,12 +120,11 @@ ${KUNYE}
 Ürünün türü, miktarı, markası/modeli ve diğer temel nitelikleri Site'deki ürün sayfasında yer alır. Site'de ilan edilen fiyatlar KDV dahil satış fiyatlarıdır ve güncelleninceye kadar geçerlidir. Süreli olarak ilan edilen kampanya fiyatları belirtilen sürenin sonuna kadar geçerlidir. Alıcı için bağlayıcı olan, siparişin verildiği andaki fiyattır.
 
 5. ÖDEME
-Ödeme, Site'de sunulan ödeme yöntemleriyle ve iyzico altyapısı üzerinden yapılır. Kart bilgileri Satıcı tarafından görülmez ve saklanmaz. Taksitli ödemelerde bankanızın uyguladığı vade farkı ödeme ekranında gösterilir.
+Ödeme, Site'de sunulan ödeme yöntemleriyle yapılır. Havale/EFT ile ödemede Satıcı'nın banka hesap bilgileri sipariş onay ekranında ve e-postasında bildirilir; sipariş, ödemenin Satıcı'nın hesabına geçmesiyle onaylanır. Belirtilen sürede ödemesi yapılmayan siparişler iptal edilir.
 
 6. TESLİMAT VE KARGO
 Teslimat, sipariş onayından itibaren ortalama ${TESLIMAT_SURESI} içinde, her hâlükârda yasal azami süre olan 30 günü aşmamak kaydıyla, Alıcı'nın sipariş formunda belirttiği adrese yapılır.
 ${KARGO_KURALI}
-Kurulum gerektiren su arıtma sistemlerinde teslimat ve montaj, Satıcı'nın yetkili servisi veya bayisi tarafından Alıcı ile önceden kararlaştırılan bir randevu gününde yerinde yapılır.
 
 7. CAYMA HAKKI
 Alıcı, malı teslim aldığı tarihten itibaren 14 (on dört) gün içinde hiçbir gerekçe göstermeksizin ve cezai şart ödemeksizin sözleşmeden cayabilir. Cayma bildiriminin nasıl yapılacağı, iade adresi ve cayma hakkının kullanılamayacağı hâller Mesafeli Satış Sözleşmesi'nin 7. ve 8. maddelerinde ayrıntılı olarak düzenlenmiştir.
@@ -155,13 +153,13 @@ Sipariş sırasında beyan edilen ad-soyad, teslimat adresi, telefon ve e-posta 
 3. ÜRÜN VE ÖDEME BİLGİLERİ
 3.1. Ürünlerin tanımı, birim fiyatı, adedi, kargo bedeli ve ödenecek toplam tutar sipariş özetinde ve sipariş onay e-postasında yer alır. Alıcı bu bilgileri siparişi vermeden önce onaylamıştır.
 3.2. Site'de ilan edilen fiyatlar KDV dahildir ve güncelleninceye kadar geçerlidir. Bağlayıcı olan, siparişin verildiği andaki fiyattır.
-3.3. Ödeme, iyzico ödeme altyapısı üzerinden yapılır. Kart bilgileri Satıcı tarafından görülmez ve saklanmaz.
+3.3. Ödeme, Site'de sunulan ödeme yöntemleriyle yapılır. Havale/EFT ile ödemede sipariş, bedelin Satıcı'nın hesabına geçmesiyle onaylanır; belirtilen sürede ödemesi yapılmayan siparişler iptal edilir.
 
 4. TESLİMAT
 4.1. Ürün, sipariş onayından itibaren ortalama ${TESLIMAT_SURESI} içinde, her hâlükârda yasal azami süre olan 30 günü aşmamak kaydıyla, Alıcı'nın sipariş formunda belirttiği adrese teslim edilir. Teslim süresi Alıcı'nın bulunduğu yerin uzaklığına göre değişebilir.
 4.2. Kargoyla gönderilen ürünlerde teslimat, Satıcı'nın anlaşmalı olduğu kargo firması aracılığıyla yapılır. Gönderiye ait kargo firması ve takip numarası, ürün kargoya verildiğinde Alıcı'ya e-posta ile bildirilir ve Site'deki "Sipariş Takibi" sayfasından izlenebilir.
 4.3. ${KARGO_KURALI}
-4.4. Kurulum gerektiren su arıtma sistemlerinde ürün, Satıcı'nın yetkili servisi veya bayisi tarafından Alıcı ile önceden kararlaştırılan bir randevu gününde yerinde teslim edilir ve montajı yapılır. Bu ürünlerde teslim tarihi, montajın tamamlandığı tarihtir.
+4.4. Alıcı'nın "Mağazadan teslim al" seçeneğini işaretlediği siparişlerde ürün, hazır olduğu Alıcı'ya bildirildikten sonra Satıcı'nın adresinden teslim edilir; bu siparişlerde kargo bedeli alınmaz.
 4.5. Ürün, Alıcı'dan başka bir kişi veya kuruluşa teslim edilecekse, teslim alacak kişinin teslimatı kabul etmemesinden Satıcı sorumlu tutulamaz.
 4.6. Alıcı, ürünü teslim aldığı anda kontrol etmekle ve hasarlı ya da ayıplı gördüğü ürünü kargo görevlisinden teslim almayarak kargo firmasına tutanak tutturmakla yükümlüdür. Tutanak tutulmadan teslim alınan ürünlerde taşıma kaynaklı hasar iddiasının ispatı güçleşir; bu durum Alıcı'nın Kanun'dan doğan ayıplı mal hükümlerine dayalı haklarını ortadan kaldırmaz.
 
@@ -170,7 +168,7 @@ Sipariş sırasında beyan edilen ad-soyad, teslimat adresi, telefon ve e-posta 
 5.2. Satıcı, sözleşme konusu ürünün sağlam, eksiksiz, siparişte belirtilen niteliklere uygun ve varsa garanti belgesi ile kullanım kılavuzuyla birlikte teslim edilmesinden sorumludur.
 5.3. Sipariş konusu ürünün tedarikinin imkânsızlaşması hâlinde Satıcı bu durumu ifa süresi dolmadan Alıcı'ya bildirir ve ödenen bedeli, bildirimden itibaren 14 (on dört) gün içinde Alıcı'nın ödeme yaptığı araca iade eder. Alıcı'nın kabul etmesi hâlinde Satıcı eşit kalite ve fiyatta farklı bir ürün tedarik edebilir.
 5.4. Satıcı, mücbir sebepler ya da nakliyeyi engelleyen olağanüstü hava koşulları, ulaşımın kesilmesi gibi durumlar nedeniyle ürünü süresinde teslim edemezse durumu Alıcı'ya bildirir. Bu hâlde Alıcı siparişi iptal edebilir; iptal hâlinde ödenen bedel 14 (on dört) gün içinde iade edilir.
-5.5. Kredi kartına yapılan iadelerde bedelin bankaya aktarılmasından sonra Alıcı'nın hesabına yansıma süresi tamamen bankanın işleyişine bağlıdır ve Satıcı'nın bu sürece müdahale imkânı yoktur.
+5.5. Havale/EFT ile yapılan ödemelerin iadesi, Alıcı'nın bildireceği kendi adına kayıtlı banka hesabına (IBAN) yapılır. Kredi kartına yapılan iadelerde bedelin bankaya aktarılmasından sonra Alıcı'nın hesabına yansıma süresi bankanın işleyişine bağlıdır.
 5.6. Ürünün tesliminden sonra Alıcı'ya ait kredi kartının, Alıcı'nın kusuru olmaksızın yetkisiz kişilerce hukuka aykırı biçimde kullanıldığının tespiti ve ilgili banka veya finans kuruluşunun ürün bedelini Satıcı'ya ödememesi hâlinde Alıcı, kendisine teslim edilmiş ürünü 3 (üç) gün içinde Satıcı'ya iade eder; iade masrafı Satıcı'ya aittir.
 5.7. Ürün fiyatının, ortalama bir kişinin bakışıyla açıkça hatalı olduğu anlaşılacak şekilde piyasa değerinin çok altında ilan edilmiş olması hâlinde Satıcı, bu fiyata verilen siparişleri iptal edip tahsil edilen bedeli iade etme hakkını saklı tutar.
 5.8. Site'nin genel görünümü ve tasarımı ile Site'deki tüm metin, görsel, marka, logo ve yazılımların fikri ve sınai mülkiyet hakları Satıcı'ya veya lisans verenlerine aittir; izinsiz kopyalanamaz ve kullanılamaz.
@@ -195,9 +193,8 @@ esas alınır.
 Mesafeli Sözleşmeler Yönetmeliği'nin 15. maddesi uyarınca, taraflarca aksi kararlaştırılmadıkça aşağıdaki sözleşmelerde cayma hakkı kullanılamaz:
 a) Alıcı'nın istekleri veya kişisel ihtiyaçları doğrultusunda hazırlanan mallara ilişkin sözleşmeler (özel karışım ve siparişe özel üretilen ürünler dahil).
 b) Çabuk bozulabilen veya son kullanma tarihi geçebilecek malların teslimine ilişkin sözleşmeler.
-c) Tesliminden sonra ambalaj, bant, mühür, paket gibi koruyucu unsurları açılmış olan mallardan iadesi sağlık ve hijyen açısından uygun olmayanların teslimine ilişkin sözleşmeler (kullanılmış su filtresi ve membran gibi).
+c) Tesliminden sonra ambalaj, bant, mühür, paket gibi koruyucu unsurları açılmış olan mallardan iadesi sağlık ve hijyen açısından uygun olmayanların teslimine ilişkin sözleşmeler (emzik, biberon emziği ve iç giyim ürünleri gibi).
 ç) Tesliminden sonra başka ürünlerle karışan ve doğası gereği ayrıştırılması mümkün olmayan mallara ilişkin sözleşmeler.
-d) Cayma hakkı süresi sona ermeden önce, Alıcı'nın onayıyla ifasına başlanan hizmetlere ilişkin sözleşmeler (Alıcı'nın talebiyle 14 günlük süre dolmadan yapılan montaj ve kurulum hizmetleri dahil).
 Bu maddedeki istisnalar, ürünün ayıplı çıkması hâlinde Alıcı'nın Kanun'dan doğan seçimlik haklarını (onarım, değişim, bedel indirimi, sözleşmeden dönme) ortadan kaldırmaz.
 
 9. TEMERRÜT
@@ -222,7 +219,7 @@ Nasıl kullanılır?
 1. "Hesabım > Siparişlerim > Sipariş Detayı" adımlarını izleyin.
 2. İade etmek istediğiniz ürünleri seçerek iade talebi oluşturun.
 3. Talebiniz onaylandığında ürünü nasıl göndereceğiniz size bildirilir. Onay gelmeden ürünü göndermeyin.
-4. Ürünü kutusu, ambalajı, varsa standart aksesuarları ve faturasıyla birlikte gönderin.
+4. Ürünü etiketi sökülmemiş ve kullanılmamış hâlde; kutusu, ambalajı ve faturasıyla birlikte gönderin.
 
 Dilerseniz aynı bildirimi ${SATICI.eposta} adresine e-posta göndererek veya ${SATICI.telefon} numarasını arayarak da yapabilirsiniz.
 
@@ -230,10 +227,10 @@ Dilerseniz aynı bildirimi ${SATICI.eposta} adresine e-posta göndererek veya ${
 Cayma hakkı kapsamındaki iadelerde kargo bedeli Satıcı'ya aittir. Ürünü Satıcı'nın anlaşmalı olduğu kargo firmasıyla karşı ödemeli gönderdiğinizde herhangi bir ücret ödemezsiniz.
 
 Paranız ne zaman iade edilir?
-Cayma bildiriminizin ulaşmasından itibaren en geç 14 (on dört) gün içinde, kargo bedeli dahil ödediğiniz tüm tutar, ödeme yaparken kullandığınız araca iade edilir. Kredi kartı iadelerinin hesabınıza yansıması bankanıza bağlı olarak birkaç iş günü sürebilir.
+Cayma bildiriminizin ulaşmasından itibaren en geç 14 (on dört) gün içinde, kargo bedeli dahil ödediğiniz tüm tutar, ödeme yaparken kullandığınız araca iade edilir. Havale/EFT ile yaptığınız ödemeler, bildireceğiniz kendi adınıza kayıtlı IBAN'a iade edilir.
 
 Cayma hakkının kullanılamayacağı ürünler
-Kişisel istek ve ihtiyaçlarınıza göre hazırlanan özel üretim ürünler, çabuk bozulabilen veya son kullanma tarihi geçebilecek ürünler, ambalajı açıldığında hijyen açısından iadesi uygun olmayan ürünler (kullanılmış filtre ve membran gibi), teslimden sonra başka ürünlerle karışıp ayrıştırılamayan ürünler ve 14 günlük süre dolmadan sizin onayınızla ifasına başlanan hizmetler (talebiniz üzerine yapılan montaj gibi) bu kapsamdadır.
+Kişisel istek ve ihtiyaçlarınıza göre hazırlanan özel üretim ürünler, çabuk bozulabilen veya son kullanma tarihi geçebilecek ürünler, ambalajı açıldığında hijyen açısından iadesi uygun olmayan ürünler (emzik, biberon emziği ve iç giyim gibi) ve teslimden sonra başka ürünlerle karışıp ayrıştırılamayan ürünler bu kapsamdadır.
 
 Bu istisnalar, ürünün ayıplı çıkması durumundaki haklarınızı etkilemez. Ayıplı üründe onarım, değişim, bedel indirimi ve sözleşmeden dönme haklarınız saklıdır.
 

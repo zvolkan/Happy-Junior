@@ -157,12 +157,7 @@ export default async function SiparislerimPage() {
               <div className="space-y-3">
                 {orders.map((order) => {
                   const status = STATUS_MAP[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700 border-gray-200' }
-                  const isAlbTarim = order.brand.key === 'alb-tarim'
-                  // `order.brand.key` veritabanından `string` olarak geliyor,
-                  // `BrandKey` değil. Doğrudan BrandLogo'ya verilemez; iki
-                  // markadan birine daraltıyoruz.
-                  const markaAnahtari: BrandKey = isAlbTarim ? 'alb-tarim' : 'alb-su-aritma'
-                  const dotColor = isAlbTarim ? 'bg-green-400' : 'bg-blue-400'
+                  const dotColor = 'bg-brand-400'
                   // Karar `src/lib/order-cancel.ts`'te; sunucu aksiyonu da aynı
                   // fonksiyonu kullanıyor. Burada ayrı bir kopya vardı ve
                   // yalnızca `status`'a bakıyordu: iadesi sürmekte olan
@@ -177,7 +172,7 @@ export default async function SiparislerimPage() {
                       {/* Header row */}
                       <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-4 border-b border-gray-100">
                         <div className="flex items-center gap-2 min-w-0">
-                          <BrandLogo brand={markaAnahtari} boyut="xs" ikonSinifi="text-gray-500" />
+                          <BrandLogo boyut="xs" ikonSinifi="text-gray-500" />
                           <div className="min-w-0">
                             <span className="text-xs font-mono text-gray-400">#{formatOrderNo(order)}</span>
                             <span className="text-gray-300 mx-1.5">·</span>
@@ -231,12 +226,10 @@ export default async function SiparislerimPage() {
                               Kargo Takip
                             </Link>
                           )}
-                          {isAlbTarim && (
-                            <RepeatOrderButton
-                              orderId={order.id}
-                              brandKey={order.brand.key as BrandKey}
-                            />
-                          )}
+                          <RepeatOrderButton
+                            orderId={order.id}
+                            brandKey={order.brand.key as BrandKey}
+                          />
                         </div>
 
                         {/* Right: details */}

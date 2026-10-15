@@ -10,7 +10,7 @@ import { reserveStock, YetersizStokHatasi } from '@/lib/stock'
 import { rateLimit } from '@/lib/rate-limit'
 
 /** Sözleşme metinleri değiştiğinde artırılmalı — hangi sürümün onaylandığı kaydedilir */
-const CONTRACT_VERSION = '2026-09-1'
+const CONTRACT_VERSION = 'hj-2026-10-1'
 
 interface IncomingItem {
   id?: unknown

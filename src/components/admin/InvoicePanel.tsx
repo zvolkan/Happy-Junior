@@ -136,7 +136,7 @@ export default function InvoicePanel({ orderId, dosyaAdi, faturaNo, yuklenmeTari
               id="fatura-no"
               value={no}
               onChange={(e) => setNo(e.target.value)}
-              placeholder="Örn: ALB2026000000123"
+              placeholder="Örn: HJ2026000000123"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
             />
           </div>

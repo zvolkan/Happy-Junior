@@ -1,194 +1,58 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import Image from 'next/image'
-import Reveal from '@/components/ui/Reveal'
+import Link from 'next/link'
 import Icon, { type IconName } from '@/components/ui/Icon'
-import BrandLogo from '@/components/ui/BrandLogo'
+import { categoryIcon } from '@/lib/category-icon'
+import { BRAND } from '@/lib/constants'
+import { getPublishedPosts } from '@/lib/blog'
+import BrandArtwork from '@/components/ui/BrandArtwork'
+import { getFeaturedProducts } from '@/lib/queries/products'
+import { getCategoriesByBrand } from '@/lib/queries/categories'
+import BrandHeroSection from '@/components/home/BrandHeroSection'
+import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
-import AnimatedCounter from '@/components/ui/AnimatedCounter'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Bayırlıoğlu — ALB Tarım & Alb Su Teknolojileri',
-  description:
-    "Bayırlıoğlu bünyesindeki ALB Tarım ve Alb Su Teknolojileri markaları ile tarım, su arıtma ve teknoloji alanlarında Türkiye'ye hizmet veriyoruz.",
-  keywords: ['Bayırlıoğlu', 'ALB Tarım', 'Alb Su Teknolojileri', 'su arıtma', 'tarım ürünleri'],
+  title: { absolute: `${BRAND.name} — Bebek ve Çocuk Giyim, Anamur` },
+  description: BRAND.description,
 }
 
-// ─── İstatistikler ───────────────────────────────────────────────────────────
-// Doğrulanamayan rakamlar kaldırıldı.
-const STATS = [
-  // "2 Marka" zayıf bir rakamdı; yerine doğrulanabilir kuruluş yılı kondu.
-  { value: '1977', label: 'Yılından Beri' },
-  { value: 'Anamur', label: 'Merkez' },
-  { value: '81 İl', label: 'Teslimat Ağı' },
-  { value: '11', label: 'Tedarik Markası' },
+/** Ana sayfadaki güven şeridi — müşterinin sipariş öncesi en çok sorduğu dört konu. */
+const GUVEN: { icon: IconName; title: string; desc: string }[] = [
+  { icon: 'kilit', title: 'Havale/EFT ile ödeme', desc: 'IBAN bilgisi sipariş sonrası gösterilir' },
+  { icon: 'kargo', title: 'Kargo ile teslimat', desc: 'Anamur içi mağazadan teslim seçeneği' },
+  { icon: 'yenile', title: '14 gün değişim/iade', desc: 'Beden uymazsa kolayca değiştirin' },
+  { icon: 'telefon', title: 'WhatsApp destek', desc: 'Beden ve ürün sorularınız için' },
 ]
 
-// ─── Değerlerimiz ─────────────────────────────────────────────────────────────
-const VALUES: { icon: IconName; title: string; desc: string }[] = [
-  {
-    icon: 'garanti',
-    title: 'Güven',
-    desc: 'Sattığımız ürünün arkasında dururuz. Verdiğimiz teslimat ve servis sözünü tutarız.',
-  },
-  {
-    icon: 'fikir',
-    title: 'İnovasyon',
-    desc: 'En güncel teknoloji ve ürünleri Türk tüketicisiyle buluşturuyoruz.',
-  },
-  {
-    icon: 'filiz',
-    title: 'Sürdürülebilirlik',
-    desc: 'Doğayı koruyarak üretmek, gelecek nesillere sağlıklı bir dünya bırakmak önceliğimizdir.',
-  },
-  {
-    icon: 'yildiz',
-    title: 'Kalite',
-    desc: 'Sattığımız her ürün titizlikle seçilir, satış sonrası desteğimiz kesintisiz sürer.',
-  },
-]
+export default async function AnaSayfa() {
+  const brandKey = BRAND.key
+  const cfg = BRAND
 
-// ─── Galeri ──────────────────────────────────────────────────────────────────
-//
-// Burada dört boş gri kutu duruyordu ("Merkez Ofisimiz", "Tarım Ekibimiz"…).
-// Fotoğraf konmadığı için ziyaretçiye yarım kalmış bir sayfa gibi görünüyordu.
-// Gerçek fotoğraflarınızı `public/images/galeri/` altına koyup bu diziyi
-// doldurun; dizi boşken bölüm hiç render edilmiyor.
-const GALLERY_ITEMS: { label: string; src: string; aspect: string }[] = []
+  const [brandProducts, brandCategories, brandPosts] = await Promise.all([
+    getFeaturedProducts(brandKey, 8),
+    getCategoriesByBrand(brandKey),
+    getPublishedPosts(brandKey, 3),
+  ])
 
-export default function HomePage() {
   return (
-    <div className="bg-white">
-      {/* ── HERO ── */}
-      <section className="relative min-h-[88vh] flex items-center bg-gray-900 overflow-hidden">
-        {/* Arka plan gradient — Bayırlıoğlu: charcoal/stone */}
-        {/* GÖRSEL: /public/images/bayirlioglu-hero.jpg */}
-        <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-stone-900" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(82,82,82,0.35),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(120,113,108,0.2),transparent_55%)]" />
+    <>
+      <BrandHeroSection brandKey={brandKey} />
 
-        <div className="relative z-10 container-main w-full py-20">
-          <div className="max-w-3xl mx-auto text-center">
-            {/* Logo mark */}
-            <div className="flex justify-center mb-6 anim-scale-in">
-              <Image
-                src="/images/bayirlioglu-mark-beyaz.svg"
-                /* Başlıkta ve altbilgide aynı logo zaten "Bayırlıoğlu" diye
-                   okunuyor; burada üçüncü kez okutmak ekran okuyucuda
-                   gereksiz tekrar yaratıyor. Görsel dekoratif. */
-                alt=""
-                width={2080}
-                height={780}
-                className="h-14 sm:h-20 w-auto object-contain opacity-90 float-soft"
-                priority
-              />
-            </div>
-
-            {/* Kuruluş yılı rozeti */}
-            <span className="anim-fade-up anim-delay-150 inline-flex items-center gap-2 bg-white/8 border border-white/15 text-white/75 text-sm px-4 py-1.5 rounded-full mb-8 font-medium">
-              <span className="w-2 h-2 rounded-full bg-stone-400 animate-pulse" />
-              Anamur Merkezli, Türkiye Geneli Teslimat
-            </span>
-
-            {/*
-              "Bayırlıoğlu" kelimesinin altındaki kuyruklar (y, ğ) kesiliyordu.
-              Sebebi `bg-clip-text`: yazı saydam, görünen şey arkasındaki
-              gradyan ve o gradyan YALNIZCA elemanın kutusu kadar çiziliyor.
-              `leading-tight` ile satır kutusu, hem üstteki şapkayı (ğ) hem
-              alttaki kuyrukları alacak kadar yüksek değildi; kutunun dışında
-              kalan mürekkep boyanmadığı için yok olmuştu.
-
-              Asıl sebep yazı tipiydi ve `layout.tsx` içinde düzeltildi: Inter
-              yalnızca `latin` alt kümesiyle yükleniyordu, ı ve ğ harfleri o
-              kümede olmadığı için sistem yazı tipinden geliyordu ve kuyrukları
-              daha derindi. Burası ikinci savunma hattı: yazı tipi ne olursa
-              olsun boyanan alan biraz daha aşağı iniyor.
-
-              Düzeltme em cinsinden, çünkü taşma yazı boyutuyla birlikte büyür:
-              alta boya payı ekleniyor, aynı miktar negatif boşlukla geri
-              alınıyor — görünen aralık değişmiyor, yalnızca boyanan alan
-              genişliyor.
-            */}
-            <h1 className="anim-fade-up anim-delay-200 text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6">
-              <span className="gradient-pan block pb-[0.2em] -mb-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-200 to-stone-400">
-                Bayırlıoğlu
-              </span>
-            </h1>
-            <p className="anim-fade-up anim-delay-300 text-lg sm:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed mb-10">
-              Anamur&apos;daki dükkânımızda tarım girdileri ve su arıtma sistemleri satıyoruz;
-              su sistemlerinin kurulumunu ve servisini kendi ekibimiz yapıyor.
-            </p>
-
-            {/* ── Marka seçim kartları ──────────────────────────────────
-                Önceki hâli iki büyük, doygun renkli bloktu ve logoların altına
-                beyaz birer altlık konmuştu. Altlık şu yüzden gerekmişti: ALB
-                Tarım logosunun yaprağı yeşil, kartın zemini de yeşildi; logo
-                doğrudan konsa eriyip kayboluyordu. Ama beyaz kare, karanlık
-                hero'nun ortasında yapıştırılmış uygulama simgesi gibi duruyordu.
-
-                Çözüm altlığı güzelleştirmek değil, ZEMİNİ değiştirmek oldu.
-                Kartlar artık hero'nun kendi karanlığı üzerinde duran yarı
-                saydam cam yüzeyler. Renkli logolar bu nötr zeminde kendiliğinden
-                okunuyor, altlığa gerek kalmıyor. Marka rengi kayboldu sanmayın:
-                kenarlık ve gölge fareyle üzerine gelindiğinde markanın rengine
-                dönüyor.
-
-                Yerleşim de dikeyden yataya çevrildi. Eskiden logo/başlık/eylem
-                alt alta diziliyor ve kart 150 pikseli aşıyordu; mobilde iki
-                kart ekranın yarısını yiyordu. Yatay dizilimde yükseklik ~72
-                piksele düştü. */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
-              <Link
-                href="/alb-tarim"
-                className="anim-fade-up anim-delay-400 arrow-slide group flex items-center gap-3.5 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3.5 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-tarim-400/50 hover:bg-white/[0.1] hover:shadow-lg hover:shadow-tarim-500/15"
-              >
-                <BrandLogo brand="alb-tarim" boyut="md" className="icon-pop" />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-bold text-white leading-tight">ALB Tarım</span>
-                  <span className="mt-0.5 block truncate text-xs text-white/55">
-                    Gübre · Zirai Danışmanlık
-                  </span>
-                </span>
-                <span className="arrow flex-shrink-0 text-white/40 transition-colors group-hover:text-white">
-                  →
-                </span>
-              </Link>
-
-              <Link
-                href="/alb-su-aritma"
-                className="anim-fade-up anim-delay-500 arrow-slide group flex items-center gap-3.5 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3.5 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-albsu-400/50 hover:bg-white/[0.1] hover:shadow-lg hover:shadow-albsu-500/15"
-              >
-                <BrandLogo brand="alb-su-aritma" boyut="md" className="icon-pop" />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-bold text-white leading-tight">Alb Su Teknolojileri</span>
-                  <span className="mt-0.5 block truncate text-xs text-white/55">
-                    Su Arıtma · Klima · Yedek Parça
-                  </span>
-                </span>
-                <span className="arrow flex-shrink-0 text-white/40 transition-colors group-hover:text-white">
-                  →
-                </span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Alt dalga dekorasyonu */}
-        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-white to-transparent" />
-      </section>
-
-      {/* ── İSTATİSTİKLER ── */}
-      <section className="py-14 bg-white border-b border-gray-100">
+      {/* ── GÜVEN ŞERİDİ ── */}
+      <section className="py-6 bg-white border-b border-gray-100">
         <div className="container-main">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-            <RevealGroup stagger={110} variant="up">
-              {STATS.map((s) => (
-                <div key={s.label} className="text-center">
-                  <AnimatedCounter
-                    value={s.value}
-                    className="block text-3xl sm:text-4xl font-black text-gray-900 tabular-nums"
-                  />
-                  <p className="text-sm text-gray-500 mt-1 font-medium">{s.label}</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-4">
+            <RevealGroup itemClassName="h-full" variant="scale">
+              {GUVEN.map((item) => (
+                <div key={item.title} className="flex items-center gap-3 px-3 sm:px-5 h-full">
+                  <Icon name={item.icon} className="w-7 h-7 shrink-0 text-brand-600" />
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm">{item.title}</p>
+                    <p className="text-gray-500 text-xs mt-0.5">{item.desc}</p>
+                  </div>
                 </div>
               ))}
             </RevealGroup>
@@ -196,222 +60,217 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── BİZ KİMİZ ── */}
-      <section className="py-20 bg-gray-50">
+      {/* ── KATEGORİLER ── */}
+      <section className="py-16 bg-white">
         <div className="container-main">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-            {/* Metin */}
-            <Reveal variant="left">
-              <p className="text-stone-600 font-bold uppercase text-sm tracking-widest mb-3">
-                Kurumsal
-              </p>
-              <h2 className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight mb-6">
-                Biz Kimiz?
-              </h2>
-              <div className="space-y-4 text-gray-600 leading-relaxed">
-                <p>
-                  Hikâyemiz 1977&apos;de, &ldquo;Bayırlıoğlu&rdquo; lakabıyla tanınan
-                  Durmuş Ali Bulut&apos;un Anamur&apos;da kurduğu güven ilişkisiyle
-                  başladı. Bir lakapla başlayan bu isim, zamanla şirketimizin adı ve
-                  değerlerimizin bir parçası oldu. Bugün iki markası altında
-                  çalışıyoruz.
-                </p>
-                <p>
-                  <strong className="text-gray-800">ALB Tarım</strong> — dededen kalan
-                  şirketimizin adıyla yola çıktık, bugün kendi formüllerimizle gübre
-                  üreten bir şirket hâline geldik. Tarımın her alanında gübre ve zirai
-                  danışmanlık hizmeti veriyoruz. Türk tarımının gelişmesine
-                  katkıda bulunmayı; teknolojiyi ve yenilikçi gelişmeleri yakından takip
-                  ederek öncü şirketler arasında yer almayı hedefliyoruz.
-                </p>
-                <p>
-                  <strong className="text-gray-800">Alb Su Teknolojileri</strong> —
-                  2014&apos;ten bu yana Ramazan Bulut&apos;un yürüttüğü ALB Su, Anamur ve
-                  çevre bölgede binlerce haneye ve işletmeye temiz su ulaştırıyor. A.O.
-                  Smith yetkili bayiliğimizle evsel ve endüstriyel su arıtma çözümlerini
-                  Türkiye&apos;nin dört bir yanına gönderiyoruz.
-                </p>
-                <p>
-                  Ürünlerimizi Anamur&apos;daki dükkânımızdan satıyor, siparişleri kargoyla
-                  Türkiye&apos;nin 81 iline gönderiyoruz.
-                </p>
+          <Reveal>
+            <div className="flex items-center justify-between mb-10">
+              <div>
+                <p className="font-bold uppercase text-sm tracking-widest mb-1 text-brand-400">Kategori</p>
+                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under">Ürün Kategorileri</h2>
               </div>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <Link href={`/urunler`} className="hidden sm:block text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors arrow-slide">
+                Tüm Ürünler <span className="arrow">→</span>
+              </Link>
+            </div>
+          </Reveal>
+
+          {/* Sadece kök (root) kategoriler gösterilir — alt kategoriler değil */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <RevealGroup itemClassName="h-full">
+            {brandCategories
+              .filter((c) => !c.parentId)
+              .slice(0, 8)
+              .map((cat) => (
                 <Link
-                  href="/alb-tarim/hakkimizda"
-                  className="btn-press inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
+                  key={cat.slug}
+                  href={`/urunler?kullanim=${cat.slug}`}
+                  className="group relative block h-full border border-brand-100 brand-surface-soft rounded-2xl p-5 hover-lift overflow-hidden"
                 >
-                  ALB Tarım Hakkında
+                  {/* Kayan alt aksan çizgisi */}
+                  <span className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-b-2xl" />
+
+                  <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center mb-3 icon-pop group-hover:shadow-lg">
+                    <Icon name={categoryIcon(cat.slug, cat.icon)} className="w-5 h-5" />
+                  </div>
+                  <p className="font-bold text-gray-900 text-sm leading-tight">{cat.name}</p>
+                  {cat.productCount !== undefined && cat.productCount > 0 && (
+                    <p className="text-gray-400 text-xs mt-1">{cat.productCount} ürün</p>
+                  )}
                 </Link>
-                <Link
-                  href="/alb-su-aritma/hakkimizda"
-                  className="btn-press inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
-                >
-                  Alb Su Hakkında
+              ))}
+            </RevealGroup>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ÖNE ÇIKAN ÜRÜNLER ── */}
+      {brandProducts.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="container-main">
+            <Reveal>
+              <div className="flex items-center justify-between mb-10">
+                <div>
+                  <p className="font-bold uppercase text-sm tracking-widest mb-1 text-brand-400">Seçili Ürünler</p>
+                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under">Öne Çıkan Ürünler</h2>
+                </div>
+                <Link href={`/urunler`} className="hidden sm:block text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors arrow-slide">
+                  Tümünü Gör <span className="arrow">→</span>
                 </Link>
               </div>
             </Reveal>
 
-            {/* Fotoğraflar eklenene kadar bu bölüm hiç görünmüyor */}
-            {GALLERY_ITEMS.length > 0 && (
-              <div className="grid grid-cols-2 gap-3">
-                <RevealGroup variant="scale" stagger={100} baseDelay={120}>
-                  {GALLERY_ITEMS.map((item) => (
-                    <div
-                      key={item.label}
-                      className={`${item.aspect} img-zoom hover-lift rounded-2xl relative overflow-hidden flex items-end p-3`}
-                    >
-                      <Image
-                        src={item.src}
-                        alt={item.label}
-                        fill
-                        sizes="(max-width: 768px) 45vw, 22vw"
-                        className="img-zoom-target object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      <p className="relative text-white text-xs font-semibold">{item.label}</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <RevealGroup itemClassName="h-full">
+              {brandProducts.map((product) => {
+                const displayPrice = product.salePrice ?? product.price
+                return (
+                  <Link
+                    key={product.slug}
+                    href={`/urunler/${product.slug}`}
+                    className="group block h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-200 hover-lift"
+                  >
+                    <div className="aspect-[4/5] bg-gray-100 relative overflow-hidden">
+                      {product.images[0] ? (
+                        <Image
+                          src={product.images[0].url}
+                          alt={product.images[0].alt || product.name}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                          <Icon name="paket" className="w-10 h-10 text-gray-300" />
+                        </div>
+                      )}
+
+                      {product.salePrice && (
+                        <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
+                          İndirim
+                        </span>
+                      )}
+
+                      {/* Quick-view overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-end justify-center pb-3">
+                        <span className="bg-white/95 text-gray-900 text-[10px] font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg tracking-widest">
+                          İNCELE →
+                        </span>
+                      </div>
                     </div>
-                  ))}
-                </RevealGroup>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
-      {/* ── MARKALARIMIZ ── */}
-      <section className="py-20 bg-white">
-        <div className="container-main">
-          <Reveal className="text-center mb-14">
-            <p className="text-stone-600 font-bold uppercase text-sm tracking-widest mb-3">
-              Markalarımız
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-              İki Markamız, İki İş Kolumuz
-            </h2>
-          </Reveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* ALB Tarım */}
-            <Reveal variant="up" className="h-full">
-            <div className="group h-full hover-lift rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-8 hover:shadow-xl hover:shadow-green-100">
-              <BrandLogo
-                brand="alb-tarim"
-                boyut="lg"
-                kutuSinifi="bg-green-600 rounded-2xl"
-                className="mb-6 icon-pop"
-              />
-              <h3 className="text-2xl font-black text-gray-900 mb-3">ALB Tarım</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                Kendi formüllerimizle ürettiğimiz gübreleri satıyor, zirai
-                danışmanlık veriyoruz. Anamur&apos;daki
-                dükkânımızdan alabilir ya da siparişinizi kargoyla adresinize
-                gönderebilirsiniz.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-600 mb-8">
-                {['Organik & Kimyasal Gübreler', 'Kendi Formülümüz Gübreler', 'Toprak & Yaprak Analizi', 'Zirai Danışmanlık'].map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/alb-tarim"
-                className="btn-press arrow-slide inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-semibold"
-              >
-                ALB Tarım&apos;ı Keşfet <span className="arrow">→</span>
-              </Link>
+                    <div className="p-3">
+                      <p className="text-gray-900 font-semibold text-xs leading-tight line-clamp-2 mb-1">{product.name}</p>
+                      <p className="text-gray-400 text-[10px] mb-2">{product.category.name}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="font-black text-sm text-brand-600">
+                          {displayPrice.toLocaleString('tr-TR')} ₺
+                        </p>
+                        {product.salePrice && (
+                          <p className="text-gray-500 text-[10px] line-through">
+                            {product.price.toLocaleString('tr-TR')} ₺
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+              </RevealGroup>
             </div>
-            </Reveal>
-
-            {/* Alb Su Teknolojileri */}
-            <Reveal variant="up" delay={120} className="h-full">
-            <div className="group h-full hover-lift rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50 p-8 hover:shadow-xl hover:shadow-blue-100">
-              <BrandLogo
-                brand="alb-su-aritma"
-                boyut="lg"
-                kutuSinifi="bg-blue-600 rounded-2xl"
-                className="mb-6 icon-pop"
-              />
-              <h3 className="text-2xl font-black text-gray-900 mb-3">Alb Su Teknolojileri</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                A.O. Smith yetkili bayii olarak evsel ve endüstriyel su arıtma
-                sistemleri satıyoruz. Kurulumu ve sonrasındaki bakımı kendi teknik
-                ekibimiz yapıyor.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-600 mb-8">
-                {['RO Su Arıtma Sistemleri', 'Endüstriyel Su Arıtma & Yumuşatma', 'Inverter Klima Sistemleri', 'Akıllı Ev Elektroniği', 'Yerinde Teknik Servis'].map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/alb-su-aritma"
-                className="btn-press arrow-slide inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold"
-              >
-                Alb Su&apos;yu Keşfet <span className="arrow">→</span>
-              </Link>
-            </div>
-            </Reveal>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ── DEĞERLERİMİZ ── */}
-      <section className="py-20 bg-gray-900">
-        <div className="container-main">
-          <Reveal className="text-center mb-14">
-            <p className="text-stone-400 font-bold uppercase text-sm tracking-widest mb-3">
-              Felsefemiz
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white">Değerlerimiz</h2>
-          </Reveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <RevealGroup stagger={90} itemClassName="h-full">
-              {VALUES.map((v) => (
-                <div
-                  key={v.title}
-                  className="group h-full bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1.5"
-                >
-                  <Icon name={v.icon} className="w-8 h-8 mb-4 icon-pop text-white" />
-                  <h3 className="font-bold text-white text-lg mb-2">{v.title}</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">{v.desc}</p>
+      {/* ── BLOG ── */}
+      {brandPosts.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="container-main">
+            <Reveal>
+              <div className="flex items-center justify-between mb-10">
+                <div>
+                  <p className="font-bold uppercase text-sm tracking-widest mb-1 text-brand-400">Blog</p>
+                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under">Son Yazılar</h2>
                 </div>
+                <Link href={`/blog`} className="hidden sm:block text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors arrow-slide">
+                  Tüm Yazılar <span className="arrow">→</span>
+                </Link>
+              </div>
+            </Reveal>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <RevealGroup itemClassName="h-full">
+              {brandPosts.map((post) => (
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="group block h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift"
+                >
+                  <div className="img-zoom aspect-[16/9] relative overflow-hidden bg-gray-100">
+                    {post.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="img-zoom-target absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <BrandArtwork variant="blog" className="absolute inset-0 w-full h-full" />
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <p className="text-xs font-semibold uppercase tracking-wide mb-2 text-brand-600">
+                      {post.category ?? ''}
+                    </p>
+                    <h3 className="font-bold text-gray-900 leading-snug mb-2 group-hover:text-gray-700 transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-500 text-sm line-clamp-2">{post.excerpt}</p>
+                    <p className="text-gray-400 text-xs mt-3">
+                      {new Date(post.publishedAt ?? new Date()).toLocaleDateString('tr-TR', {
+                        day: 'numeric', month: 'long', year: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </Link>
               ))}
-            </RevealGroup>
+              </RevealGroup>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ── İLETİŞİM CTA ── */}
-      <section className="py-20 bg-white">
-        <Reveal className="container-main text-center">
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">
-            Bizimle İletişime Geçin
-          </h2>
-          <p className="text-gray-600 max-w-xl mx-auto mb-10">
-            Hangi markamızla ilgilendiğinizi seçin ve size en iyi şekilde yardımcı olalım.
-          </p>
+      {/* ── CTA ── */}
+      <section className="py-20 brand-surface">
+        <div className="container-main text-center">
+          <Reveal>
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">
+              Beden mi soracaksınız?
+            </h2>
+            <p className="text-white/70 mb-8 max-w-lg mx-auto">
+              Çocuğunuzun yaşını ve boyunu yazın, size uygun bedeni birlikte seçelim.
+            </p>
+          </Reveal>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
-              href="/alb-tarim/iletisim"
-              className="btn-press inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-semibold"
+              href={`/iletisim`}
+              className="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3.5 rounded-xl font-semibold transition-colors shadow-lg btn-press"
             >
-              ALB Tarım İletişim
+              İletişime Geç
             </Link>
-            <Link
-              href="/alb-su-aritma/iletisim"
-              className="btn-press inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold"
+            <a
+              href={`https://wa.me/${cfg.whatsapp.phone}?text=${encodeURIComponent(cfg.whatsapp.message)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#25D366] hover:bg-[#1aad50] text-white px-8 py-3.5 rounded-xl font-semibold transition-colors shadow-lg flex items-center gap-2 btn-press"
             >
-              Alb Su İletişim
-            </Link>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+              WhatsApp
+            </a>
           </div>
-        </Reveal>
+        </div>
       </section>
-    </div>
+    </>
   )
 }

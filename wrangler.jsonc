@@ -4,10 +4,10 @@
 	//
 	// <KÖŞELİ PARANTEZ> içindeki değerleri kendi kimliklerinizle doldurun.
 	// Kimlikleri şu komutlar veriyor:
-	//   npx wrangler hyperdrive create bayirlioglu-db --connection-string="..."
+	//   npx wrangler hyperdrive create happy-junior-db --connection-string="..."
 	//   npx wrangler kv namespace create HIZ_SINIRI
 	// ══════════════════════════════════════════════════════════════════════════
-	"name": "bayirlioglu",
+	"name": "happy-junior",
 	// OpenNext'in ürettiği worker DEĞİL, onu saran kendi girişimiz.
 	// Sebebi: cron (scheduled) handler'ı eklemek. Bkz. custom-worker.ts
 	"main": "./custom-worker.ts",
@@ -27,7 +27,7 @@
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
-			"service": "bayirlioglu"
+			"service": "happy-junior"
 		}
 	],
 	// Supabase Postgres bağlantı havuzu.
@@ -36,7 +36,9 @@
 	"hyperdrive": [
 		{
 			"binding": "HYPERDRIVE",
-			"id": "d23902d89715402e92cb62e7c2635986",
+			// TODO(kurulum): `npx wrangler hyperdrive create happy-junior --connection-string=...`
+			// komutunun verdiği kimlik buraya yazılacak.
+			"id": "00000000000000000000000000000000",
 			"localConnectionString": "postgresql://postgres:postgres@localhost:5432/postgres"
 		}
 	],
@@ -81,8 +83,7 @@
 	// Gizli OLMAYAN değerler burada durabilir.
 	// Gizli olanlar (anahtarlar, parolalar) `wrangler secret put` ile konur.
 	"vars": {
-		"NEXT_PUBLIC_SITE_URL": "https://bayirlioglu.com",
-		"NEXT_PUBLIC_BRAND": "alb-tarim"
+		"NEXT_PUBLIC_SITE_URL": "https://happyjunioranamur.com"
 	},
 	"observability": {
 		"enabled": true

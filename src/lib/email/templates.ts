@@ -34,7 +34,7 @@ function layout(title: string, bodyHtml: string): string {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
 
-        <!-- Logo neden SVG değil PNG:
+        <!-- TODO: logo PNG gelince buraya img etiketi konacak. Logo neden SVG değil PNG:
              Gmail ve Outlook e-postada SVG göstermiyor, görsel sessizce boş
              çıkardı. Bu yüzden aynı logonun PNG sürümü kullanılıyor (beyaz,
              şeffaf zeminli — arkasındaki koyu hücre görünüyor).
@@ -43,10 +43,8 @@ function layout(title: string, bodyHtml: string): string {
              görsel yüklenmese bile başlık okunur kalıyor.
              DİKKAT: bu blok bir şablon dizesinin (template literal) içinde;
              yorum metninde ters tırnak KULLANMAYIN, dizeyi kapatır. -->
-        <tr><td style="background:#18181b;padding:18px 28px;">
-          <img src="${siteUrl}/images/bayirlioglu-logo-beyaz.png"
-               alt="Bayırlıoğlu" width="132" height="66"
-               style="display:block;border:0;outline:none;text-decoration:none;height:auto;max-width:132px;" />
+        <tr><td style="background:#52392a;padding:18px 28px;">
+          <span style="font-family:Arial,sans-serif;font-size:22px;font-weight:800;color:#ffffff;">Happy Junior</span>
         </td></tr>
 
         <tr><td style="padding:28px;">
@@ -469,7 +467,7 @@ export function adminNewOrderEmail(data: OrderEmailData) {
 
     ${addressBlock(data)}
     ${button(
-      `${siteUrl}/admin/${data.brandKey ?? 'alb-tarim'}/siparisler/${data.orderId}`,
+      `${siteUrl}/admin/siparisler/${data.orderId}`,
       'Siparişi Aç',
     )}
   `,
@@ -618,7 +616,7 @@ export function adminReturnRequestEmail(params: {
   brandKey?: string
 }) {
   const siteUrl = getSiteUrl()
-  const iadeYolu = `${siteUrl}/admin/${params.brandKey ?? 'alb-tarim'}/iadeler`
+  const iadeYolu = `${siteUrl}/admin/iadeler`
 
   const html = layout(
     'Yeni İade Talebi',

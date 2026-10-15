@@ -118,7 +118,8 @@ export default function GizlilikPage() {
                 6. Ödeme ve Kredi Kartı Güvenliği
               </h2>
               <p className="text-gray-600 leading-relaxed">
-                Sitemizdeki tüm kredi kartı işlemleri, lisanslı ödeme kuruluşu{' '}
+                Şu anda siparişler havale/EFT ile ödenmektedir; banka bilgileriniz sitemizde
+                işlenmez. Kartla ödeme seçeneği sunulduğunda tüm kredi kartı işlemleri, lisanslı ödeme kuruluşu{' '}
                 <strong className="font-semibold text-gray-900">iyzico</strong> altyapısı üzerinden
                 gerçekleştirilir. Ödeme adımına geldiğinizde kart bilgileriniz doğrudan iyzico&apos;nun
                 güvenli ödeme ekranına girilir.
@@ -189,7 +190,7 @@ export default function GizlilikPage() {
                 Bu bilgileri hiçbir koşulda e-posta, telefon veya mesajla sizden talep etmeyiz.
                 Bizden geliyormuş gibi görünen ve bu bilgileri isteyen bir ileti alırsanız
                 yanıtlamayın ve{' '}
-                <a href={`mailto:${SATICI.eposta}`} className="text-green-600 hover:underline">
+                <a href={`mailto:${SATICI.eposta}`} className="text-brand-700 hover:underline">
                   {SATICI.eposta}
                 </a>{' '}
                 adresine bildirin.
@@ -253,7 +254,7 @@ export default function GizlilikPage() {
               </ul>
               <p className="text-gray-600 leading-relaxed mt-3">
                 Ayrıntılı bilgi için{' '}
-                <Link href="/kvkk" className="text-green-600 hover:underline">
+                <Link href="/kvkk" className="text-brand-700 hover:underline">
                   KVKK Aydınlatma Metni
                 </Link>{' '}
                 sayfamıza bakabilirsiniz.
@@ -265,11 +266,11 @@ export default function GizlilikPage() {
               <p className="text-gray-600 leading-relaxed">
                 Gizlilik uygulamalarımız hakkında sorularınız veya kişisel verilerinizle ilgili
                 talepleriniz için{' '}
-                <a href={`mailto:${SATICI.eposta}`} className="text-green-600 hover:underline">
+                <a href={`mailto:${SATICI.eposta}`} className="text-brand-700 hover:underline">
                   {SATICI.eposta}
                 </a>{' '}
                 adresine yazabilir, {SATICI.telefon} numarasını arayabilir veya{' '}
-                <Link href="/iletisim" className="text-green-600 hover:underline">
+                <Link href="/iletisim" className="text-brand-700 hover:underline">
                   İletişim
                 </Link>{' '}
                 sayfamızdan bize ulaşabilirsiniz.

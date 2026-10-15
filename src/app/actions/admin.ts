@@ -400,13 +400,9 @@ export async function createProduct(formData: FormData): Promise<ProductActionRe
     console.error('[admin] teknik özellikler kaydedilemedi:', error)
   }
 
-  const redirectBrand = (formData.get('redirectBrand') as string) || 'alb-tarim'
-  // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
-  revalidatePath('/admin/alb-tarim/urunler')
-  revalidatePath('/admin/alb-su-aritma/urunler')
-  revalidatePath(`/alb-tarim/urunler`)
-  revalidatePath(`/alb-su-aritma/urunler`)
-  redirect(`/admin/${redirectBrand}/urunler`)
+  revalidatePath('/admin/urunler')
+  revalidatePath(`/urunler`)
+  redirect('/admin/urunler')
 }
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
@@ -494,13 +490,9 @@ export async function updateProduct(
     }
   }
 
-  const redirectBrand = (formData.get('redirectBrand') as string) || 'alb-tarim'
-  // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
-  revalidatePath('/admin/alb-tarim/urunler')
-  revalidatePath('/admin/alb-su-aritma/urunler')
-  revalidatePath(`/alb-tarim/urunler`)
-  revalidatePath(`/alb-su-aritma/urunler`)
-  redirect(`/admin/${redirectBrand}/urunler`)
+  revalidatePath('/admin/urunler')
+  revalidatePath(`/urunler`)
+  redirect('/admin/urunler')
 }
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
@@ -532,10 +524,8 @@ export async function deleteProduct(id: string): Promise<DeleteProductResult> {
       data: { isActive: false, isFeatured: false },
     })
     // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
-  revalidatePath('/admin/alb-tarim/urunler')
-  revalidatePath('/admin/alb-su-aritma/urunler')
-    revalidatePath('/alb-tarim/urunler')
-    revalidatePath('/alb-su-aritma/urunler')
+  revalidatePath('/admin/urunler')
+    revalidatePath('/urunler')
     return { ok: true, archived: true, orderCount }
   }
 
@@ -554,10 +544,8 @@ export async function deleteProduct(id: string): Promise<DeleteProductResult> {
     }
 
     // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
-  revalidatePath('/admin/alb-tarim/urunler')
-  revalidatePath('/admin/alb-su-aritma/urunler')
-    revalidatePath('/alb-tarim/urunler')
-    revalidatePath('/alb-su-aritma/urunler')
+  revalidatePath('/admin/urunler')
+    revalidatePath('/urunler')
     return { ok: true, archived: false }
   } catch (error) {
     console.error('[admin] ürün silinemedi:', id, error)
@@ -575,8 +563,7 @@ export async function toggleProductActive(id: string, current: boolean) {
 
   await prisma.product.update({ where: { id }, data: { isActive: !current } })
   // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
-  revalidatePath('/admin/alb-tarim/urunler')
-  revalidatePath('/admin/alb-su-aritma/urunler')
+  revalidatePath('/admin/urunler')
 }
 
 export async function toggleProductFeatured(id: string, current: boolean) {
@@ -584,6 +571,5 @@ export async function toggleProductFeatured(id: string, current: boolean) {
 
   await prisma.product.update({ where: { id }, data: { isFeatured: !current } })
   // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
-  revalidatePath('/admin/alb-tarim/urunler')
-  revalidatePath('/admin/alb-su-aritma/urunler')
+  revalidatePath('/admin/urunler')
 }

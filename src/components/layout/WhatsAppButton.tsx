@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { BRANDS, GROUP_WHATSAPP } from '@/lib/constants'
+import { BRAND } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 export default function WhatsAppButton() {
@@ -18,15 +18,7 @@ export default function WhatsAppButton() {
     return () => clearInterval(interval)
   }, [])
 
-  // Bulunduğumuz bölüme göre WhatsApp hedefi:
-  // - /alb-tarim*      → ALB Tarım numarası + ALB Tarım mesajı
-  // - /alb-su-aritma*  → ALB Su numarası + ALB Su mesajı
-  // - Bayırlıoğlu landing ve diğer grup sayfaları → ALB Su numarası + Bayırlıoğlu mesajı
-  const whatsapp = pathname.startsWith('/alb-tarim')
-    ? BRANDS['alb-tarim'].whatsapp
-    : pathname.startsWith('/alb-su-aritma')
-      ? BRANDS['alb-su-aritma'].whatsapp
-      : GROUP_WHATSAPP
+  const whatsapp = BRAND.whatsapp
 
   const url = `https://wa.me/${whatsapp.phone}?text=${encodeURIComponent(whatsapp.message)}`
 
