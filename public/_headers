@@ -1,0 +1,17 @@
+# Statik dosyalar için önbellek başlıkları.
+#
+# Vercel bunu kendiliğinden yapıyordu. Cloudflare'de bu dosya olmazsa
+# /_next/static altındaki hash'li dosyalar her ziyarette yeniden indirilir.
+#
+# NOT: Güvenlik başlıkları (CSP, HSTS, X-Frame-Options) BURAYA KONMUYOR.
+# Onlar next.config.ts headers() ve src/middleware.ts üzerinden geliyor;
+# CSP nonce'u her istekte değiştiği için statik dosyaya yazılamaz.
+
+/_next/static/*
+  Cache-Control: public,max-age=31536000,immutable
+
+/images/*
+  Cache-Control: public,max-age=2592000
+
+/videos/*
+  Cache-Control: public,max-age=2592000

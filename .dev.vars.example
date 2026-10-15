@@ -1,0 +1,49 @@
+# Yerel geliştirme için ortam değişkenleri.
+#
+# Bu dosyayı `.dev.vars` olarak kopyalayın ve gerçek değerleri girin.
+# `.dev.vars` MUTLAKA .gitignore içinde olmalı — gerçek anahtarlar taşıyor.
+#
+# Üretimde bu değerler `wrangler secret put <AD>` ile konuyor;
+# gizli olmayanlar (NEXT_PUBLIC_*) wrangler.jsonc içindeki "vars" bölümünde.
+
+# Next.js'in hangi .env dosyasını yükleyeceğini belirler — bu satır kalsın
+NEXTJS_ENV=development
+
+# ── Site ────────────────────────────────────────────────────────────────────
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_BRAND=alb-tarim
+
+# ── Veritabanı ──────────────────────────────────────────────────────────────
+# Üretimde bağlantı Hyperdrive binding'inden geliyor; bu değişken yalnızca
+# `prisma generate` / `prisma db push` gibi CLI komutları için gerekli.
+DATABASE_URL=
+DIRECT_URL=
+
+# ── Supabase ────────────────────────────────────────────────────────────────
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# ── Yönetici paneli ─────────────────────────────────────────────────────────
+ADMIN_PASSWORD=
+# openssl rand -base64 48
+ADMIN_SESSION_SECRET=
+
+# ── iyzico ──────────────────────────────────────────────────────────────────
+IYZICO_API_KEY=
+IYZICO_SECRET_KEY=
+IYZICO_BASE_URL=https://sandbox-api.iyzipay.com
+
+# ── E-posta ─────────────────────────────────────────────────────────────────
+RESEND_API_KEY=
+EMAIL_FROM=
+ADMIN_NOTIFY_EMAIL=
+
+# ── Zamanlanmış görev ───────────────────────────────────────────────────────
+# custom-worker.ts bu değeri kendi HTTP isteğinde kullanıyor
+CRON_SECRET=
+
+# ── Acil durum ──────────────────────────────────────────────────────────────
+# CSP bir şeyi bozarsa: true yapın, politika yalnızca rapor eder, engellemez
+# CSP_REPORT_ONLY=true
