@@ -115,9 +115,18 @@ export interface Product {
   reviewCount: number;
   sku: string;
   productBrand?: string;   // Ürünün üretici markası (ör. Mudese)
+  /** Beden/yaş seçenekleri. Boşsa ürün tek seçeneklidir ve `stock` geçerlidir. */
+  variants?: ProductVariant[];
   tags?: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  label: string;          // "6-9 Ay", "2 Yaş", "86 cm"
+  stock: number;
+  price?: number;         // boşsa ürün fiyatı geçerli
 }
 
 // ─── KATEGORİ ────────────────────────────────────────────────────────────────
@@ -141,6 +150,8 @@ export interface Category {
 export interface CartItem {
   product: Product;
   quantity: number;
+  /** Seçilen beden/yaş. Varyasyonu olan üründe zorunlu (sepete eklerken denetlenecek). */
+  variant?: { id: string; label: string };
 }
 
 // ─── SİPARİŞ DURUMU ──────────────────────────────────────────────────────────

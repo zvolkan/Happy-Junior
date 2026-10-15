@@ -1,8 +1,8 @@
-// Bayirlioglu E-Ticaret — Prisma Schema
+// Happy Junior E-Ticaret — Prisma Schema
 // Veritabanı: PostgreSQL (Supabase)
 
 generator client {
-  provider   = "prisma-client-js"
+  provider = "prisma-client-js"
 
   // engineType = "client"  ←  BU SATIR OLMADAN queryCompiler ETKİSİZ.
   //
@@ -34,17 +34,17 @@ datasource db {
 // ─── MARKALAR ────────────────────────────────────────────────────────────────
 
 model Brand {
-  id          Int        @id @default(autoincrement())
-  key         String     @unique @db.VarChar(30)
-  name        String     @db.VarChar(100)
+  id          Int      @id @default(autoincrement())
+  key         String   @unique @db.VarChar(30)
+  name        String   @db.VarChar(100)
   description String?
-  logoUrl     String?    @map("logo_url") @db.VarChar(500)
-  isActive    Boolean    @default(true) @map("is_active")
-  createdAt   DateTime   @default(now()) @map("created_at")
+  logoUrl     String?  @map("logo_url") @db.VarChar(500)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  categories  Category[]
-  products    Product[]
-  orders      Order[]
+  categories Category[]
+  products   Product[]
+  orders     Order[]
   blogPosts  BlogPost[]
 
   @@map("brands")
@@ -53,22 +53,22 @@ model Brand {
 // ─── KATEGORİLER ─────────────────────────────────────────────────────────────
 
 model Category {
-  id          Int        @id @default(autoincrement())
-  brandId     Int        @map("brand_id")
-  parentId    Int?       @map("parent_id")
-  name        String     @db.VarChar(100)
-  slug        String     @unique @db.VarChar(100)
+  id          Int      @id @default(autoincrement())
+  brandId     Int      @map("brand_id")
+  parentId    Int?     @map("parent_id")
+  name        String   @db.VarChar(100)
+  slug        String   @unique @db.VarChar(100)
   description String?
-  imageUrl    String?    @map("image_url") @db.VarChar(500)
-  icon        String?    @db.VarChar(100)
-  sortOrder   Int        @default(0) @map("sort_order")
-  isActive    Boolean    @default(true) @map("is_active")
-  createdAt   DateTime   @default(now()) @map("created_at")
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
+  icon        String?  @db.VarChar(100)
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  brand       Brand      @relation(fields: [brandId], references: [id])
-  parent      Category?  @relation("CategoryParent", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryParent")
-  products    Product[]
+  brand    Brand      @relation(fields: [brandId], references: [id])
+  parent   Category?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryParent")
+  products Product[]
 
   @@map("categories")
 }
@@ -76,19 +76,19 @@ model Category {
 // ─── ÜRÜNLER ─────────────────────────────────────────────────────────────────
 
 model Product {
-  id               String   @id @default(cuid())
-  categoryId       Int      @map("category_id")
-  brandId          Int      @map("brand_id")
-  name             String   @db.VarChar(255)
-  slug             String   @unique @db.VarChar(255)
-  description      String?  @db.Text
-  shortDescription String?  @map("short_description") @db.VarChar(1000)
-  sku              String?  @unique @db.VarChar(100)
-  barcode          String?  @db.VarChar(100)
+  id               String  @id @default(cuid())
+  categoryId       Int     @map("category_id")
+  brandId          Int     @map("brand_id")
+  name             String  @db.VarChar(255)
+  slug             String  @unique @db.VarChar(255)
+  description      String? @db.Text
+  shortDescription String? @map("short_description") @db.VarChar(1000)
+  sku              String? @unique @db.VarChar(100)
+  barcode          String? @db.VarChar(100)
 
   // Fiyat
-  price            Decimal  @db.Decimal(10, 2)
-  salePrice        Decimal? @map("sale_price") @db.Decimal(10, 2)
+  price     Decimal  @db.Decimal(10, 2)
+  salePrice Decimal? @map("sale_price") @db.Decimal(10, 2)
 
   /// ETKİN FİYAT — VERİTABANI ÜRETİR, UYGULAMA YAZMAZ.
   ///
@@ -103,44 +103,45 @@ model Product {
   /// `prisma db push` bunu NORMAL bir sütuna çevirmeye kalkar ve üretilen
   /// değeri kaybeder. Şema değişikliklerini migration ile yapın; `db push`
   /// kullanacaksanız önce bu sütunu ve indekslerini gözden geçirin.
-  effectivePrice   Decimal? @map("effective_price") @db.Decimal(10, 2)
+  effectivePrice Decimal? @map("effective_price") @db.Decimal(10, 2)
 
   // Stok
-  stockQuantity    Int      @default(0) @map("stock_quantity")
-  minStockLevel    Int      @default(5) @map("min_stock_level")
-  unit             String   @default("adet") @db.VarChar(50)
-  weight           Decimal? @db.Decimal(8, 3)
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  minStockLevel Int      @default(5) @map("min_stock_level")
+  unit          String   @default("adet") @db.VarChar(50)
+  weight        Decimal? @db.Decimal(8, 3)
 
   // Durum
-  isActive         Boolean  @default(true) @map("is_active")
-  isFeatured       Boolean  @default(false) @map("is_featured")
+  isActive   Boolean @default(true) @map("is_active")
+  isFeatured Boolean @default(false) @map("is_featured")
 
   // SEO
-  metaTitle        String?  @map("meta_title") @db.VarChar(255)
-  metaDescription  String?  @map("meta_description") @db.Text
+  metaTitle       String? @map("meta_title") @db.VarChar(255)
+  metaDescription String? @map("meta_description") @db.Text
 
   // Ürün markası (TİMAC AGRO, HAIFA, ALB TARIM, FERTIVAL vb.)
-  productBrand     String?  @map("product_brand") @db.VarChar(100)
+  productBrand String? @map("product_brand") @db.VarChar(100)
 
   // KDV oranı (%). Gübrede %1 veya %10, cihazda %20 olabilir.
   // Fiyatlar KDV DAHİL girilir; bu oran fatura matrahını ayrıştırmak için.
-  vatRate          Int      @default(20) @map("vat_rate")
+  vatRate Int @default(20) @map("vat_rate")
 
   // Değerlendirme (ortalama — review tablosu hazır değil iken burada tutuyoruz)
-  rating           Decimal  @default(0) @map("rating") @db.Decimal(3, 1)
-  reviewCount      Int      @default(0) @map("review_count")
+  rating      Decimal @default(0) @map("rating") @db.Decimal(3, 1)
+  reviewCount Int     @default(0) @map("review_count")
 
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // İlişkiler
-  category    Category       @relation(fields: [categoryId], references: [id])
-  brand       Brand          @relation(fields: [brandId], references: [id])
-  images      ProductImage[]
-  specs       ProductSpec[]
-  tags        ProductTag[]
-  orderItems  OrderItem[]
-  favorites   Favorite[]
+  category   Category         @relation(fields: [categoryId], references: [id])
+  brand      Brand            @relation(fields: [brandId], references: [id])
+  images     ProductImage[]
+  variants   ProductVariant[]
+  specs      ProductSpec[]
+  tags       ProductTag[]
+  orderItems OrderItem[]
+  favorites  Favorite[]
 
   @@index([brandId])
   @@index([categoryId])
@@ -160,7 +161,7 @@ model ProductImage {
   sortOrder Int     @default(0) @map("sort_order")
   isPrimary Boolean @default(false) @map("is_primary")
 
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@map("product_images")
@@ -168,15 +169,43 @@ model ProductImage {
 
 // ─── TEKNİK ÖZELLİKLER ───────────────────────────────────────────────────────
 
-model ProductSpec {
-  id         Int     @id @default(autoincrement())
-  productId  String  @map("product_id")
-  specName   String  @map("spec_name") @db.VarChar(100)
-  specValue  String  @map("spec_value") @db.VarChar(255)
-  specUnit   String? @map("spec_unit") @db.VarChar(50)
-  sortOrder  Int     @default(0) @map("sort_order")
+// ─── Beden / yaş varyasyonu ──────────────────────────────────────────────────
+//
+// Çocuk giyiminde her bedenin stoğu ayrı tutulur. Varyasyonu olan üründe
+// `Product.stockQuantity` kullanılmaz; stok buradan okunur ve sepet/sipariş
+// varyasyon üzerinden düşer. Varyasyonu olmayan ürünler (oyuncak, matara)
+// eskisi gibi `Product.stockQuantity` ile çalışır.
+model ProductVariant {
+  id            String   @id @default(cuid())
+  productId     String   @map("product_id")
+  // Müşterinin gördüğü etiket: "6-9 Ay", "2 Yaş", "86 cm", "Mavi / 3 Yaş"
+  label         String   @db.VarChar(60)
+  sku           String?  @unique @db.VarChar(100)
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  // Boşsa ürünün fiyatı geçerli; bazı bedenler farklı fiyatlıysa doldurulur.
+  priceOverride Decimal? @map("price_override") @db.Decimal(10, 2)
+  sortOrder     Int      @default(0) @map("sort_order")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@unique([productId, label])
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model ProductSpec {
+  id        Int     @id @default(autoincrement())
+  productId String  @map("product_id")
+  specName  String  @map("spec_name") @db.VarChar(100)
+  specValue String  @map("spec_value") @db.VarChar(255)
+  specUnit  String? @map("spec_unit") @db.VarChar(50)
+  sortOrder Int     @default(0) @map("sort_order")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@map("product_specifications")
@@ -207,16 +236,16 @@ model ProductTag {
 // id: Supabase auth.users UUID ile eşleşir
 
 model User {
-  id        String    @id @db.Uuid
-  email     String    @unique @db.VarChar(255)
-  name      String?   @db.VarChar(150)
-  phone     String?   @db.VarChar(20)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id        String   @id @db.Uuid
+  email     String   @unique @db.VarChar(255)
+  name      String?  @db.VarChar(150)
+  phone     String?  @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  addresses Address[]
-  orders    Order[]
-  favorites Favorite[]
+  addresses      Address[]
+  orders         Order[]
+  favorites      Favorite[]
   returnRequests ReturnRequest[]
 
   @@map("users")
@@ -225,21 +254,21 @@ model User {
 // ─── ADRESLER ─────────────────────────────────────────────────────────────────
 
 model Address {
-  id         String  @id @default(cuid())
-  userId     String  @map("user_id") @db.Uuid
-  label      String  @db.VarChar(50)   // "Ev", "Çiftlik", vb.
-  fullName   String  @map("full_name") @db.VarChar(150)
-  phone      String  @db.VarChar(20)
-  line1      String  @db.VarChar(255)
-  line2      String? @db.VarChar(255)
-  district   String  @db.VarChar(100)
-  city       String  @db.VarChar(100)
-  postalCode String? @map("postal_code") @db.VarChar(10)
-  isDefault  Boolean @default(false) @map("is_default")
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id") @db.Uuid
+  label      String   @db.VarChar(50) // "Ev", "Çiftlik", vb.
+  fullName   String   @map("full_name") @db.VarChar(150)
+  phone      String   @db.VarChar(20)
+  line1      String   @db.VarChar(255)
+  line2      String?  @db.VarChar(255)
+  district   String   @db.VarChar(100)
+  city       String   @db.VarChar(100)
+  postalCode String?  @map("postal_code") @db.VarChar(10)
+  isDefault  Boolean  @default(false) @map("is_default")
   createdAt  DateTime @default(now()) @map("created_at")
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders  Order[]
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
 
   @@index([userId])
   @@map("addresses")
@@ -258,7 +287,7 @@ enum OrderStatus {
 }
 
 model Order {
-  id            String      @id @default(cuid())
+  id String @id @default(cuid())
 
   // Müşteriye gösterilen sipariş numarası — yalnızca rakam.
   //
@@ -270,36 +299,36 @@ model Order {
   //
   // `id` iç kimlik olarak kalıyor (adresler, ilişkiler, revalidate yolları).
   // Eski siparişlerde bu alan boş olabileceği için opsiyonel.
-  orderNumber   String?     @unique @map("order_number") @db.VarChar(20)
+  orderNumber String? @unique @map("order_number") @db.VarChar(20)
 
-  userId        String      @map("user_id") @db.Uuid
-  addressId     String?     @map("address_id")
-  brandId       Int         @map("brand_id")
-  status        OrderStatus @default(PENDING)
+  userId    String      @map("user_id") @db.Uuid
+  addressId String?     @map("address_id")
+  brandId   Int         @map("brand_id")
+  status    OrderStatus @default(PENDING)
 
   // Tutar dökümü — sonradan geri hesaplanamasın diye ayrı ayrı saklanır
-  subtotal      Decimal?    @db.Decimal(12, 2)
-  shippingFee   Decimal?    @map("shipping_fee") @db.Decimal(10, 2)
-  taxAmount     Decimal?    @map("tax_amount") @db.Decimal(10, 2)
-  totalAmount   Decimal     @map("total_amount") @db.Decimal(12, 2)
+  subtotal    Decimal? @db.Decimal(12, 2)
+  shippingFee Decimal? @map("shipping_fee") @db.Decimal(10, 2)
+  taxAmount   Decimal? @map("tax_amount") @db.Decimal(10, 2)
+  totalAmount Decimal  @map("total_amount") @db.Decimal(12, 2)
 
   // Teslimat adresi anlık kopyası — müşteri adresini silse de sipariş bozulmaz
-  shipFullName   String?    @map("ship_full_name") @db.VarChar(150)
-  shipPhone      String?    @map("ship_phone") @db.VarChar(20)
-  shipLine1      String?    @map("ship_line1") @db.VarChar(255)
-  shipLine2      String?    @map("ship_line2") @db.VarChar(255)
-  shipDistrict   String?    @map("ship_district") @db.VarChar(100)
-  shipCity       String?    @map("ship_city") @db.VarChar(100)
-  shipPostalCode String?    @map("ship_postal_code") @db.VarChar(10)
+  shipFullName   String? @map("ship_full_name") @db.VarChar(150)
+  shipPhone      String? @map("ship_phone") @db.VarChar(20)
+  shipLine1      String? @map("ship_line1") @db.VarChar(255)
+  shipLine2      String? @map("ship_line2") @db.VarChar(255)
+  shipDistrict   String? @map("ship_district") @db.VarChar(100)
+  shipCity       String? @map("ship_city") @db.VarChar(100)
+  shipPostalCode String? @map("ship_postal_code") @db.VarChar(10)
 
   // Kargo takibi
-  carrier        String?    @db.VarChar(100)
-  trackingNumber String?    @map("tracking_number") @db.VarChar(100)
-  shippedAt      DateTime?  @map("shipped_at")
-  deliveredAt    DateTime?  @map("delivered_at")
+  carrier        String?   @db.VarChar(100)
+  trackingNumber String?   @map("tracking_number") @db.VarChar(100)
+  shippedAt      DateTime? @map("shipped_at")
+  deliveredAt    DateTime? @map("delivered_at")
 
   // Stok bir kez düşülsün diye (tekrarlanan callback koruması)
-  stockReduced  Boolean     @default(false) @map("stock_reduced")
+  stockReduced Boolean @default(false) @map("stock_reduced")
 
   // Mesafeli satış sözleşmesi / ön bilgilendirme onayı — yasal ispat
   contractAcceptedAt DateTime? @map("contract_accepted_at")
@@ -307,11 +336,11 @@ model Order {
   contractVersion    String?   @map("contract_version") @db.VarChar(20)
 
   // Fatura bilgileri — e-arşiv fatura için zorunlu
-  invoiceType     String?  @map("invoice_type") @db.VarChar(20)   // "bireysel" | "kurumsal"
-  invoiceTitle    String?  @map("invoice_title") @db.VarChar(200) // kurumsal: ticaret unvanı
-  invoiceTaxId    String?  @map("invoice_tax_id") @db.VarChar(20) // TCKN (11) veya VKN (10)
+  invoiceType      String? @map("invoice_type") @db.VarChar(20) // "bireysel" | "kurumsal"
+  invoiceTitle     String? @map("invoice_title") @db.VarChar(200) // kurumsal: ticaret unvanı
+  invoiceTaxId     String? @map("invoice_tax_id") @db.VarChar(20) // TCKN (11) veya VKN (10)
   invoiceTaxOffice String? @map("invoice_tax_office") @db.VarChar(100)
-  invoiceEmail    String?  @map("invoice_email") @db.VarChar(255)
+  invoiceEmail     String? @map("invoice_email") @db.VarChar(255)
 
   // Kesilen e-faturanın PDF'i.
   //
@@ -324,20 +353,25 @@ model Order {
   invoiceNo         String?   @map("invoice_no") @db.VarChar(60)
   invoiceUploadedAt DateTime? @map("invoice_uploaded_at")
 
-  notes         String?     @db.Text
-  adminNote     String?     @map("admin_note") @db.Text
-  paymentMethod String?     @map("payment_method") @db.VarChar(50)
-  paymentToken  String?     @map("payment_token") @db.VarChar(512)
-  paymentStatus String?     @default("pending") @map("payment_status") @db.VarChar(20)
-  paymentId     String?     @map("payment_id") @db.VarChar(100)
-  formContent   String?     @map("form_content") @db.Text
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  notes          String?   @db.Text
+  adminNote      String?   @map("admin_note") @db.Text
+  // "havale" | "iyzico". Havalede sipariş PENDING açılır; yönetici parayı
+  // hesapta görünce panelden onaylar (paidAt dolar, durum CONFIRMED olur).
+  paymentMethod  String?   @map("payment_method") @db.VarChar(50)
+  paidAt         DateTime? @map("paid_at")
+  // "kargo" | "magaza" (Anamur içi mağazadan teslim; kargo ücreti alınmaz)
+  deliveryMethod String    @default("kargo") @map("delivery_method") @db.VarChar(20)
+  paymentToken   String?   @map("payment_token") @db.VarChar(512)
+  paymentStatus  String?   @default("pending") @map("payment_status") @db.VarChar(20)
+  paymentId      String?   @map("payment_id") @db.VarChar(100)
+  formContent    String?   @map("form_content") @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  user    User       @relation(fields: [userId], references: [id])
-  address Address?   @relation(fields: [addressId], references: [id])
-  brand   Brand      @relation(fields: [brandId], references: [id])
-  items   OrderItem[]
+  user           User            @relation(fields: [userId], references: [id])
+  address        Address?        @relation(fields: [addressId], references: [id])
+  brand          Brand           @relation(fields: [brandId], references: [id])
+  items          OrderItem[]
   returnRequests ReturnRequest[]
 
   @@index([userId])
@@ -383,38 +417,21 @@ model ContactMessage {
   @@map("contact_messages")
 }
 
-model DealerApplication {
-  id            String   @id @default(cuid())
-  companyName   String   @map("company_name") @db.VarChar(200)
-  firstName     String   @map("first_name") @db.VarChar(100)
-  lastName      String   @map("last_name") @db.VarChar(100)
-  email         String   @db.VarChar(255)
-  phone         String   @db.VarChar(30)
-  city          String   @db.VarChar(100)
-  district      String?  @db.VarChar(100)
-  brandInterest String?  @map("brand_interest") @db.VarChar(60)
-  businessType  String?  @map("business_type") @db.VarChar(80)
-  annualRevenue String?  @map("annual_revenue") @db.VarChar(80)
-  message       String?  @db.Text
-  status        String   @default("new") @db.VarChar(20)
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  @@index([createdAt])
-  @@index([status])
-  @@map("dealer_applications")
-}
-
 model OrderItem {
-  id         String  @id @default(cuid())
-  orderId    String  @map("order_id")
-  productId  String  @map("product_id")
-  quantity   Int
-  unitPrice  Decimal @map("unit_price") @db.Decimal(10, 2)
-  totalPrice Decimal @map("total_price") @db.Decimal(10, 2)
+  id           String  @id @default(cuid())
+  orderId      String  @map("order_id")
+  productId    String  @map("product_id")
+  // Beden/yaş varyasyonu. Varyasyon sonradan silinse de sipariş kaydı
+  // bozulmasın diye etiket ayrıca kopyalanıyor.
+  variantId    String? @map("variant_id")
+  variantLabel String? @map("variant_label") @db.VarChar(60)
+  quantity     Int
+  unitPrice    Decimal @map("unit_price") @db.Decimal(10, 2)
+  totalPrice   Decimal @map("total_price") @db.Decimal(10, 2)
 
   // Sipariş anındaki KDV oranı — ürünün oranı sonradan değişse de fatura bozulmaz
-  vatRate    Int     @default(20) @map("vat_rate")
-  vatAmount  Decimal? @map("vat_amount") @db.Decimal(10, 2)
+  vatRate   Int      @default(20) @map("vat_rate")
+  vatAmount Decimal? @map("vat_amount") @db.Decimal(10, 2)
 
   // iyzico'nun bu sepet kalemi için ürettiği işlem kimliği.
   // `paymentId` ile AYNI DEĞİLDİR: paymentId tüm ödemeyi, bu ise tek kalemi
@@ -422,10 +439,12 @@ model OrderItem {
   // iade bu kimliği istiyor.
   paymentTransactionId String? @map("payment_transaction_id") @db.VarChar(60)
 
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
+  @@index([variantId])
   @@map("order_items")
 }
 
@@ -448,22 +467,22 @@ enum ReturnStatus {
 }
 
 model ReturnRequest {
-  id        String       @id @default(cuid())
-  orderId   String       @map("order_id")
-  userId    String       @map("user_id") @db.Uuid
-  status    ReturnStatus @default(PENDING)
+  id      String       @id @default(cuid())
+  orderId String       @map("order_id")
+  userId  String       @map("user_id") @db.Uuid
+  status  ReturnStatus @default(PENDING)
 
   // Müşterinin gerekçesi. Cayma hakkında gerekçe zorunlu değil; yine de
   // operasyona yardımcı olsun diye alınıyor.
-  reason    String       @db.Text
+  reason String @db.Text
 
   // [{ orderItemId, quantity }] — hangi kalemler iade ediliyor
-  items     Json?
+  items Json?
 
-  adminNote String?      @map("admin_note") @db.Text
-  createdAt DateTime     @default(now()) @map("created_at")
-  updatedAt DateTime     @updatedAt @map("updated_at")
-  resolvedAt DateTime?   @map("resolved_at")
+  adminNote  String?   @map("admin_note") @db.Text
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  resolvedAt DateTime? @map("resolved_at")
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id])
@@ -480,15 +499,15 @@ model ReturnRequest {
 // ve yönetim ekranı olmadığı için güncellenemiyordu. Artık veritabanında.
 
 model BlogPost {
-  id        String   @id @default(cuid())
-  brandId   Int      @map("brand_id")
-  title     String   @db.VarChar(200)
-  slug      String   @unique @db.VarChar(220)
-  excerpt   String?  @db.Text
-  content   String   @db.Text
-  category  String?  @db.VarChar(80)
+  id         String  @id @default(cuid())
+  brandId    Int     @map("brand_id")
+  title      String  @db.VarChar(200)
+  slug       String  @unique @db.VarChar(220)
+  excerpt    String? @db.Text
+  content    String  @db.Text
+  category   String? @db.VarChar(80)
   coverImage String? @map("cover_image") @db.VarChar(500)
-  author    String?  @db.VarChar(120)
+  author     String? @db.VarChar(120)
 
   isPublished Boolean   @default(false) @map("is_published")
   publishedAt DateTime? @map("published_at")
