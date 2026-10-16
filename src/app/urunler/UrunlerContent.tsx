@@ -4,8 +4,7 @@ import { useMemo, useState, useTransition } from 'react'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import ProductImage from '@/components/product/ProductImage'
-import FavoriteButton from '@/components/product/FavoriteButton'
+import UrunKarti from '@/components/product/UrunKarti'
 import Icon from '@/components/ui/Icon'
 import { categoryIcon } from '@/lib/category-icon'
 import { BRAND, BRANDS } from '@/lib/constants'
@@ -661,105 +660,16 @@ function ProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-      {products.map((product, index) => {
-        const disc = discount(product)
-        const displayPrice = product.salePrice ?? product.price
-        const primaryImg = product.images?.find((i) => i.isPrimary)?.url ?? ''
-        // Yedeği `product.category.name` İDİ. Marka etiketi boş kalınca
-        // kategori adı yazılıyordu — kartın üstünde zaten o kategorinin
-        // başlığı duruyor, yani "EVİNİZ İÇİN" ikinci kez tekrarlanıyordu.
-        // Gösterilecek bir marka yoksa satır hiç basılmıyor.
-        const brandLabel = brandLabels.get(product.slug) ?? ''
-        const isOutOfStock = product.stock === 0
-
-        return (
-          // Giriş animasyonu ile hover-lift ayrı katmanlarda: `anim-fade-up`
-          // dolgusu transform'u sabitlediği için aynı öğede kalkma çalışmıyor.
-          <div
-            key={product.slug}
-            style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
-            className="anim-fade-up"
-          >
-            <div className="group relative h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift card-glow flex flex-col">
-              {/* Görsel */}
-              <Link href={`/urunler/${product.slug}`}>
-                <div className="img-zoom aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative overflow-hidden">
-                  <ProductImage
-                    src={primaryImg}
-                    alt={product.name}
-                    fill
-                    className="img-zoom-target object-contain p-5"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                  />
-                  {disc && (
-                    <span className="absolute top-2.5 left-2.5 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 shadow-sm">
-                      -%{disc}
-                    </span>
-                  )}
-                  {product.isFeatured && !disc && (
-                    <span
-                      className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 shadow-sm ${accentBg}`}
-                    >
-                      Öne Çıkan
-                    </span>
-                  )}
-                  {isOutOfStock && (
-                    <span className="absolute bottom-2.5 left-2.5 bg-gray-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
-                      Tükendi
-                    </span>
-                  )}
-                </div>
-              </Link>
-
-              {/* Favori — kart tamamen Link içinde olduğu için görselin
-                  üstünde ayrı bir katmanda duruyor. */}
-              <div className="absolute top-2.5 right-2.5 z-20">
-                <FavoriteButton productId={product.id} />
-              </div>
-
-              {/* İçerik */}
-              <div className="p-4 flex flex-col flex-1">
-                {brandLabel && (
-                  <p
-                    className={`text-[10px] font-bold uppercase tracking-widest ${accentTag} mb-1 truncate`}
-                  >
-                    {brandLabel}
-                  </p>
-                )}
-                <Link href={`/urunler/${product.slug}`}>
-                  <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-gray-700 transition-colors">
-                    {product.name}
-                  </h3>
-                </Link>
-                <div className="mt-auto">
-                  <div className="flex items-end gap-2 mb-3">
-                    <p className={`font-black text-lg ${accentText}`}>
-                      {displayPrice.toLocaleString('tr-TR')} ₺
-                    </p>
-                    {product.salePrice && (
-                      <p className="text-gray-500 text-xs line-through mb-0.5">
-                        {product.price.toLocaleString('tr-TR')} ₺
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    disabled={isOutOfStock}
-                    className={`btn-press w-full text-sm py-2.5 rounded-xl font-semibold disabled:hover:translate-y-0 ${
-                      isOutOfStock
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : `${accentBg} ${accentHover} text-white`
-                    }`}
-                  >
-                    {isOutOfStock ? 'Tükendi' : 'Sepete Ekle'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-      })}
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+      {products.map((product, index) => (
+        <div
+          key={product.slug}
+          style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
+          className="anim-fade-up"
+        >
+          <UrunKarti urun={product} sira={index} etiket={brandLabels.get(product.slug) || undefined} />
+        </div>
+      ))}
     </div>
   )
 }

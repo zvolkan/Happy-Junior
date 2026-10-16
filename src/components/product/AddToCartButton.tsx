@@ -24,6 +24,7 @@ export default function AddToCartButton({
   const addItem = useCartStore((s) => s.addItem)
   const items = useCartStore((s) => s.items)
   const [added, setAdded] = useState(false)
+  const [ziplat, setZiplat] = useState(0)
 
   const handleClick = () => {
     if (disabled) return
@@ -47,6 +48,8 @@ export default function AddToCartButton({
 
     toast.success(`${product.name} sepete eklendi`)
     setAdded(true)
+    setZiplat((n) => n + 1)
+    window.dispatchEvent(new CustomEvent('sepet-eklendi'))
     setTimeout(() => setAdded(false), 2000)
   }
 
@@ -54,10 +57,11 @@ export default function AddToCartButton({
     <button
       onClick={handleClick}
       disabled={disabled}
-      className={className}
+      key={ziplat}
+      className={`${className} ${added ? 'btn-eklendi' : ''} ${ziplat ? 'hj-bounce' : ''}`}
     >
       {added ? (
-        <span className="inline-flex items-center gap-1.5">
+        <span className="btn-ok inline-flex items-center gap-1.5">
           <Icon name="onay" className="w-4 h-4" />
           Eklendi
         </span>

@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 @layer base {
-  :root { --font-inter: 'Inter', sans-serif; scroll-behavior: smooth; }
+  :root { scroll-behavior: smooth; }
   * { box-sizing: border-box; }
-  body { @apply font-sans antialiased bg-gray-50 text-gray-900; }
-  h1,h2,h3,h4 { @apply font-bold tracking-tight; }
+  body { @apply font-sans antialiased bg-paper text-ink; }
+  h1,h2,h3,h4 { @apply font-display font-extrabold tracking-tight; }
   a { @apply transition-colors duration-200; }
 }
 
@@ -83,7 +83,7 @@
 }
 
 /* Focus visible */
-*:focus-visible { @apply outline-2 outline-offset-2 outline-blue-500; }
+*:focus-visible { @apply outline-2 outline-offset-2 outline-brand-500; }
 
 /* Print */
 @media print { header, footer, .no-print { display: none !important; } }

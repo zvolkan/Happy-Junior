@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import { Inter } from 'next/font/google'
+import '@fontsource-variable/bricolage-grotesque'
+import '@fontsource-variable/nunito'
 import './globals.css'
 import '@/styles/animations.css'
 import '@/styles/brand.css'
@@ -11,27 +12,14 @@ import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import PageTransition from '@/components/layout/PageTransition'
 import ScrollProgress from '@/components/layout/ScrollProgress'
 import CookieConsent from '@/components/layout/CookieConsent'
+import ButonEfekti from '@/components/layout/ButonEfekti'
 import { Toaster } from 'react-hot-toast'
 import { jsonLdScript } from '@/lib/sanitize'
 import { paylasimMetadata, yerelIsletmeVerisi, siteAramaVerisi } from '@/lib/seo'
 
-/**
- * DİKKAT — `latin-ext` şart.
- *
- * Türkçenin ı, ğ, ş, İ, Ğ, Ş harfleri Inter'in `latin` alt kümesinde YOK;
- * `latin-ext` içindeler. Yalnızca `latin` yüklendiğinde tarayıcı bu harfleri
- * yazı tipinde bulamayıp sistem yazı tipine düşüyordu. Sonuç, aynı kelimenin
- * iki farklı yazı tipiyle çizilmesi. Harf genişlikleri ve
- * özellikle alt kuyruk derinlikleri tutmadığı için satır kutusuna sığmıyor,
- * kuyruklar kesik görünüyordu.
- *
- * Türkçe bir sitede bu alt küme opsiyonel değil.
- */
-const inter = Inter({
-  subsets: ['latin', 'latin-ext'],
-  variable: '--font-inter',
-  display: 'swap',
-})
+// Yazı tipleri pakete gömülü (@fontsource). Türkçe harfler `latin-ext`
+// alt kümesinde ve paketin varsayılan CSS'i bunu içeriyor; Google Fonts'a
+// istek gitmiyor.
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_CONFIG.url),
@@ -52,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const yonetimPaneli = ((await headers()).get('x-pathname') ?? '').startsWith('/admin')
 
   return (
-    <html lang="tr" className={inter.variable}>
+    <html lang="tr">
       <body>
         {/* Klavye kullanıcıları için: sekme ile odaklanınca görünür olur */}
         <a
@@ -96,9 +84,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Footer />
             <WhatsAppButton />
             <CookieConsent />
+            <ButonEfekti />
           </>
         )}
-        <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '12px', fontFamily: 'var(--font-inter)' } }} />
+        <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '12px', fontFamily: 'inherit', fontWeight: 600 } }} />
       </body>
     </html>
   )

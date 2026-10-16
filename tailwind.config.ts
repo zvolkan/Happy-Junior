@@ -8,11 +8,19 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        // Gövde: yuvarlak hatlı, çocuk ürünlerine uygun ama okunaklı
+        sans: ['"Nunito Variable"', 'Nunito', 'system-ui', 'sans-serif'],
+        // Başlıklar: karakterli, geniş-dar ekseni olan grotesk
+        display: ['"Bricolage Grotesque Variable"', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
       },
       colors: {
         // ── Mağaza rengi ──────────────────────────────────────────────────
         // Değerler CSS değişkenlerinden okunuyor (bkz. src/styles/brand.css).
+        ink: 'rgb(var(--ink) / <alpha-value>)',
+        'ink-soft': 'rgb(var(--ink-soft) / <alpha-value>)',
+        sun: 'rgb(var(--sun) / <alpha-value>)',
+        aqua: 'rgb(var(--aqua) / <alpha-value>)',
+        paper: 'rgb(var(--paper) / <alpha-value>)',
         brand: {
           50: 'rgb(var(--brand-50) / <alpha-value>)',
           100: 'rgb(var(--brand-100) / <alpha-value>)',

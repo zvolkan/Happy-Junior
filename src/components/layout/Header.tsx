@@ -31,21 +31,27 @@ export default function Header() {
 
   const cartCount = cartHydrated ? getTotalItems() : 0
 
+  // Ürün kartı sepete ekleyince sepet simgesi zıplasın (UrunKarti → 'sepet-eklendi')
+  const [sepetZipla, setSepetZipla] = useState(0)
+  useEffect(() => {
+    const dinle = () => setSepetZipla((n) => n + 1)
+    window.addEventListener('sepet-eklendi', dinle)
+    return () => window.removeEventListener('sepet-eklendi', dinle)
+  }, [])
+
   // Ana sayfada header, hero görselinin üstünde şeffaf başlıyor.
   const isHeroPage = pathname === '/'
 
   // Header arka planı
-  const headerBg =
-    isHeroPage && !scrolled
-      ? 'bg-transparent'
-      : scrolled
-      ? 'bg-brand-900/95 backdrop-blur-xl shadow-2xl shadow-black/20'
-      : 'bg-brand-900'
+  // Açık header: beyaz zemin, kaydırınca hafif bulanık cam + alt çizgi.
+  const headerBg = scrolled
+    ? 'bg-white/90 backdrop-blur-xl shadow-[0_8px_30px_-18px_rgba(39,26,85,0.5)]'
+    : 'bg-white'
 
   const accentColor = 'bg-brand-600 hover:bg-brand-500'
 
-  const navHover = 'hover:text-brand-400'
-  const dropdownDot = 'bg-brand-400/60'
+  const navHover = 'hover:text-brand-600'
+  const dropdownDot = 'bg-brand-500'
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30)
@@ -145,7 +151,7 @@ export default function Header() {
 
         {/* ── ÜSTTE: Logo + Sağ ikonlar ── */}
         <div className={`border-b transition-all duration-500 ${
-          isHeroPage && !scrolled ? 'border-white/15' : 'border-white/10'
+          'border-ink/10'
         }`}>
           <div className="container-main">
             <div
@@ -163,7 +169,7 @@ export default function Header() {
                 onClick={() => setMenuOpen(false)}
               >
                 <BrandLogo boyut="sm" />
-                <span className="ml-2 text-lg sm:text-xl font-extrabold tracking-tight text-white">
+                <span className="ml-2 font-display text-xl sm:text-2xl font-extrabold tracking-tight text-brand-600">
                   {BRAND.name}
                 </span>
               </Link>
@@ -174,7 +180,7 @@ export default function Header() {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setSearchOpen(!searchOpen)}
-                  className="text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200"
+                  className="text-ink hover:text-brand-600 hover:bg-brand-50 p-2 rounded-full transition-all duration-200"
                   aria-label="Arama"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,8 +200,9 @@ export default function Header() {
                 */}
                 <Link
                   href="/sepet"
+                  key={sepetZipla}
                   aria-label={cartCount > 0 ? `Sepetim, ${cartCount} ürün` : 'Sepetim (boş)'}
-                  className="relative text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200"
+                  className={`relative text-ink hover:text-brand-600 hover:bg-brand-50 p-2 rounded-full transition-all duration-200 ${sepetZipla ? 'hj-bounce' : ''}`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -203,7 +210,7 @@ export default function Header() {
                   {cartCount > 0 && (
                     <span
                       aria-hidden="true"
-                      className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold px-1"
+                      className="absolute -top-0.5 -right-0.5 bg-brand-600 text-white text-[10px] min-w-[18px] h-[18px] rounded-full ring-2 ring-white flex items-center justify-center font-bold px-1"
                     >
                       {cartCount > 9 ? '9+' : cartCount}
                     </span>
@@ -213,7 +220,7 @@ export default function Header() {
                 <UserMenuButton accentColor={accentColor} />
 
                 <button
-                  className="md:hidden text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200 ml-1"
+                  className="md:hidden text-ink hover:text-brand-600 hover:bg-brand-50 p-2 rounded-full transition-all duration-200 ml-1"
                   onClick={() => setMenuOpen(!menuOpen)}
                   aria-expanded={menuOpen}
                   aria-controls="mobil-menu"
@@ -233,9 +240,7 @@ export default function Header() {
         {/* ── ALTTA: Menü (masaüstü) ── */}
         {(
           <div className={`hidden md:block border-b transition-all duration-500 ${
-            isHeroPage && !scrolled
-              ? 'bg-transparent border-white/10'
-              : 'bg-brand-800/60 border-white/5'
+            'bg-white border-ink/10'
           }`}>
             <div className="container-main">
               <nav className="flex items-center gap-0.5 h-10">
@@ -254,7 +259,7 @@ export default function Header() {
                       data-active={pathname === item.href}
                       aria-haspopup={item.children ? 'true' : undefined}
                       aria-expanded={item.children ? activeDropdown === item.label : undefined}
-                      className={`link-underline text-white/70 ${navHover} text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 hover:bg-white/8 whitespace-nowrap`}
+                      className={`link-underline text-ink ${navHover} text-[15px] font-bold px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 hover:bg-white/8 whitespace-nowrap`}
                     >
                       {item.label}
                       {item.children && (
@@ -285,7 +290,7 @@ export default function Header() {
                       >
                         {/* pt-2 → görünmez köprü: mouse gap'ten geçerken dropdown açık kalır */}
                         <div
-                          className={`bg-brand-900 border border-white/12 rounded-2xl shadow-2xl shadow-black/50 py-2 origin-top transition-all duration-300 ease-out ${
+                          className={`bg-white border-2 border-ink rounded-2xl shadow-[6px_6px_0_0_rgb(var(--ink))] py-2 origin-top transition-all duration-300 ease-out ${
                             activeDropdown === item.label
                               ? 'translate-y-0 scale-100'
                               : '-translate-y-2 scale-[0.97]'
@@ -296,7 +301,7 @@ export default function Header() {
                               key={child.label}
                               href={child.href}
                               onClick={() => setActiveDropdown(null)}
-                              className={`group/item flex items-center gap-2.5 text-white/75 ${navHover} text-sm px-4 py-2.5 transition-all duration-200 hover:bg-white/8 hover:pl-5`}
+                              className={`group/item flex items-center gap-2.5 text-ink ${navHover} text-sm font-semibold px-4 py-2.5 transition-all duration-200 hover:bg-brand-50 hover:bg-white/8 hover:pl-5`}
                             >
                               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-transform duration-200 group-hover/item:scale-150 ${dropdownDot}`} />
                               {child.label}
@@ -314,7 +319,7 @@ export default function Header() {
 
         {/* ── ARAMA ── */}
         {searchOpen && (
-          <div className="absolute top-full inset-x-0 bg-brand-900/97 backdrop-blur-xl border-t border-white/10 p-4 shadow-2xl z-50">
+          <div className="absolute top-full inset-x-0 bg-white/97 backdrop-blur-xl border-t border-ink/10 p-4 shadow-2xl z-50">
             <form onSubmit={handleSearch} className="container-main">
               <div className="relative max-w-xl mx-auto">
                 <input
@@ -324,10 +329,10 @@ export default function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Ürün ara..."
-                  className="w-full bg-white/10 text-white placeholder:text-white/40 border border-white/20 rounded-xl px-5 py-3 pr-12 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-200"
+                  className="w-full bg-brand-50 text-ink placeholder:text-ink/40 border-2 border-ink rounded-xl px-5 py-3 pr-12 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-200"
                   autoFocus
                 />
-                <button type="submit" aria-label="Ara" className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
+                <button type="submit" aria-label="Ara" className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/60 hover:text-brand-600 transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -342,7 +347,7 @@ export default function Header() {
       {menuOpen && (
         <>
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" onClick={() => setMenuOpen(false)} />
-          <div id="mobil-menu" className="fixed inset-x-0 top-[56px] sm:top-[64px] bg-brand-900/97 backdrop-blur-xl border-t border-white/10 z-40 md:hidden max-h-[80vh] overflow-y-auto">
+          <div id="mobil-menu" className="fixed inset-x-0 top-[56px] sm:top-[64px] bg-white backdrop-blur-xl border-t border-ink/10 z-40 md:hidden max-h-[80vh] overflow-y-auto">
 
             {navItems.length > 0 && (
               <nav className="p-4 space-y-1">
@@ -350,7 +355,7 @@ export default function Header() {
                   <div key={item.label}>
                     <Link
                       href={item.href}
-                      className="block text-white/80 hover:text-white py-3 px-4 rounded-xl hover:bg-white/10 font-medium transition-all duration-200"
+                      className="block text-ink hover:text-brand-600 py-3 px-4 rounded-xl hover:bg-brand-50 font-bold transition-all duration-200"
                       onClick={() => setMenuOpen(false)}
                     >
                       {item.label}
@@ -361,7 +366,7 @@ export default function Header() {
                           <Link
                             key={child.label}
                             href={child.href}
-                            className="flex items-center gap-2 text-white/55 hover:text-white py-2 px-4 rounded-lg hover:bg-white/8 text-sm transition-all duration-200"
+                            className="flex items-center gap-2 text-ink/70 hover:text-brand-600 py-2 px-4 rounded-lg hover:bg-brand-50 text-sm transition-all duration-200"
                             onClick={() => setMenuOpen(false)}
                           >
                             {child.label}

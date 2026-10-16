@@ -115,7 +115,7 @@ export default function BrandLogo({
 
   // ── Logo yoksa: eski renkli kutu + genel ikon ─────────────────────────────
   return (
-    <span className={`${ortak} ${kutuSinifi ?? ''} ${className}`}>
+    <span className={`${ortak} ${kutuSinifi ?? 'bg-brand-600 rounded-full'} ${className}`}>
       <Icon name={YEDEK_IKON[brand]} className={`${IKON_OLCU[boyut]} ${ikonSinifi}`} />
     </span>
   )

@@ -63,7 +63,12 @@ const LIST_INCLUDE = {
   category: {
     select: { id: true, name: true, slug: true, icon: true, sortOrder: true, parentId: true },
   },
-  images: { where: { isPrimary: true }, take: 1, select: { url: true, altText: true } },
+  // İlk iki görsel: kartta üzerine gelince ikinci fotoğrafa geçiliyor.
+  images: {
+    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] as { isPrimary?: 'desc'; sortOrder?: 'asc' }[],
+    take: 2,
+    select: { url: true, altText: true, isPrimary: true },
+  },
 } as const
 
 type ListRow = {
@@ -93,7 +98,7 @@ type ListRow = {
     sortOrder: number
     parentId: number | null
   }
-  images: { url: string; altText: string | null }[]
+  images: { url: string; altText: string | null; isPrimary: boolean }[]
 }
 
 function toListProduct(row: ListRow): Product {
@@ -128,7 +133,7 @@ function toListProduct(row: ListRow): Product {
     images: row.images.map((img) => ({
       url: img.url,
       alt: img.altText ?? row.name,
-      isPrimary: true,
+      isPrimary: img.isPrimary,
     })),
     specs: [],
     tags: [],

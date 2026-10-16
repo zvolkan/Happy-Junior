@@ -39,7 +39,7 @@ export default function UserMenuButton({ accentColor }: { accentColor: string })
     return (
       <Link
         href="/giris"
-        className={`hidden sm:flex items-center text-white text-sm px-4 py-2 rounded-xl font-semibold transition-colors ml-1 ${accentColor}`}
+        className={`btn-sticker hidden sm:inline-flex text-sm px-5 py-2 ml-2`}
       >
         Giriş Yap
       </Link>
@@ -54,10 +54,10 @@ export default function UserMenuButton({ accentColor }: { accentColor: string })
     <div className="relative hidden sm:block ml-1">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 text-white/90 hover:text-white text-sm font-semibold transition-colors"
+        className="flex items-center gap-2 text-ink hover:text-brand-600 text-sm font-bold transition-colors"
         aria-label="Hesabım"
       >
-        <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-xs font-bold text-white">
+        <div className="w-8 h-8 rounded-full bg-sun border-2 border-ink flex items-center justify-center text-xs font-extrabold text-ink">
           {initials}
         </div>
         <span className="hidden md:inline max-w-[100px] truncate">{user.name?.split(' ')[0] ?? 'Hesabım'}</span>
