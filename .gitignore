@@ -45,6 +45,7 @@ cloudflare-env.d.ts
 *.sql
 # Elle uygulanan kurulum SQL'leri repoda tutulur (yeni veritabanı için gerekli)
 !prisma/migrations/manual/*.sql
+!supabase/*.sql
 
 # Wrangler yerel durumu
 .wrangler/
