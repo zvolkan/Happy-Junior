@@ -75,7 +75,36 @@ if (
   }
 }
 
+/**
+ * ─── Prisma istemcisi: hedefe göre seçim ────────────────────────────────────
+ *
+ * `src/lib/db.ts` Cloudflare için `@prisma/client/wasm` alt yolunu kullanıyor
+ * (Workers'ta dosya sistemi yok; WASM motoru ESM import ile gelmeli). Node'da
+ * (Vercel önizlemesi, `next dev`, `next start`) aynı alt yol çalışmıyor:
+ * "The loaded wasm module was unexpectedly undefined" hatası veriyor.
+ *
+ * Bu yüzden Vercel'de (VERCEL=1, Vercel derlemede kendisi tanımlar) ve yerel
+ * geliştirmede alt yol Node istemcisine yönlendiriliyor. Cloudflare derlemesinde
+ * (`opennextjs-cloudflare build`) hiçbiri tanımlı olmadığı için WASM kalıyor.
+ */
+const NODE_PRISMA = process.env.VERCEL === '1' || process.env.NODE_ENV === 'development' || process.env.HJ_NODE_PRISMA === '1'
+
 const nextConfig: NextConfig = {
+  ...(NODE_PRISMA
+    ? {
+        webpack: (config, { webpack }) => {
+          // @prisma/client Next'in varsayılan dış paketlerinde olduğu için paket
+          // adına alias işlemiyor; yerel sarmalayıcı dosyayı değiştiriyoruz.
+          config.plugins.push(
+            new webpack.NormalModuleReplacementPlugin(/[\\/]prisma-istemci$/, (kaynak: { request: string }) => {
+              kaynak.request = kaynak.request + '.node'
+            }),
+          )
+          return config
+        },
+        turbopack: { resolveAlias: { './src/lib/prisma-istemci.ts': './src/lib/prisma-istemci.node.ts' } },
+      }
+    : {}),
   // Sürüm parmak izini gizle. Next.js varsayılan olarak her yanıta
   // `X-Powered-By: Next.js` ekliyor; bu başlık hiçbir işe yaramıyor ama
   // saldırgana hangi çatıyı taradığını söylüyor.

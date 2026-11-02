@@ -1,7 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { cache } from 'react'
 // DİKKAT: '@prisma/client' DEĞİL, '@prisma/client/wasm'. Sebebi aşağıda.
-import { PrismaClient } from '@prisma/client/wasm'
+import { PrismaClient } from './prisma-istemci'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 /**
@@ -82,13 +82,51 @@ function istemciKur(connectionString: string): PrismaClient {
   return new PrismaClient({ adapter })
 }
 
+// ─── Ortam seçimi: Cloudflare (Hyperdrive) ya da Node (Vercel, yerel) ───────
+//
+// Site üretimde Cloudflare Workers'ta çalışacak; önizleme ise Vercel'de.
+// Cloudflare'de bağlantı dizesi Hyperdrive bağlamasından, istek başına gelir.
+// Vercel'de (ve `next start` ile yerelde) Cloudflare bağlamı YOKTUR;
+// `getCloudflareContext()` hata fırlatır ve `DATABASE_URL` kullanılır.
+
+function hyperdriveDizesi(): string | null {
+  try {
+    const { env } = getCloudflareContext()
+    return (env as { HYPERDRIVE?: { connectionString: string } }).HYPERDRIVE?.connectionString ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Node ortamı için TEK istemci (modül düzeyinde).
+ *
+ * Vercel'de her istekte yeni bağlantı açmak sunucusuz fonksiyonun bağlantı
+ * kotasını hızla tüketir; Node'da süreç boyunca tek havuz kullanılır.
+ * Supabase'te bu adres "Transaction pooler" (6543) olmalı.
+ */
+const nodeGlobal = globalThis as unknown as { __hjPrisma?: PrismaClient }
+
+function nodeIstemcisi(): PrismaClient {
+  if (nodeGlobal.__hjPrisma) return nodeGlobal.__hjPrisma
+  const url = process.env.DATABASE_URL
+  if (!url) {
+    throw new Error(
+      '[db] Veritabanı adresi yok: Cloudflare dışında DATABASE_URL tanımlanmalı.',
+    )
+  }
+  const istemci = new PrismaClient({ adapter: new PrismaPg({ connectionString: url, max: 3 }) })
+  nodeGlobal.__hjPrisma = istemci
+  return istemci
+}
+
 /**
  * İstek içindeki veritabanı istemcisi.
  * `cache()` sayesinde aynı istek boyunca tek bir örnek döner.
  */
 export const getDb = cache((): PrismaClient => {
-  const { env } = getCloudflareContext()
-  return istemciKur(env.HYPERDRIVE.connectionString)
+  const hd = hyperdriveDizesi()
+  return hd ? istemciKur(hd) : nodeIstemcisi()
 })
 
 /**
@@ -96,8 +134,14 @@ export const getDb = cache((): PrismaClient => {
  * `sitemap.ts` gibi istek bağlamı olmayan yerlerde bunu kullanın.
  */
 export async function getDbAsync(): Promise<PrismaClient> {
-  const { env } = await getCloudflareContext({ async: true })
-  return istemciKur(env.HYPERDRIVE.connectionString)
+  try {
+    const { env } = await getCloudflareContext({ async: true })
+    const hd = (env as { HYPERDRIVE?: { connectionString: string } }).HYPERDRIVE?.connectionString
+    if (hd) return istemciKur(hd)
+  } catch {
+    /* Cloudflare dışı ortam */
+  }
+  return nodeIstemcisi()
 }
 
 /**

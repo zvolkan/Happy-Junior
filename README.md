@@ -47,6 +47,24 @@ gizli değerleri `wrangler secret put` ile girin, `NEXT_PUBLIC_*` değerlerini
 Cloudflare panelinde **Settings → Build → Variables** bölümüne ekleyin, sonra
 `npm run deploy`.
 
+## Vercel önizlemesi
+
+Canlı hedef Cloudflare Workers; Vercel yalnızca müşteriye gösterip revizyon
+toplamak için. Kod iki hedefte de aynı, fark derleme sırasında seçiliyor:
+`VERCEL=1` iken `src/lib/prisma-istemci.node.ts` (Node istemcisi), aksi hâlde
+`prisma-istemci.ts` (WASM istemcisi) kullanılır. Bkz. `next.config.ts`.
+
+1. Supabase'de yeni proje (bölge: Frankfurt). SQL Editor'de sırayla
+   `supabase/kurulum.sql`, isteğe bağlı `supabase/ornek-urunler.sql`.
+2. Vercel'de repoyu içe aktar; `vercel.json` derleme komutunu ayarlıyor.
+3. Ortam değişkenleri:
+   - `DATABASE_URL`: Supabase → Connect → Transaction pooler (6543)
+   - `DIRECT_URL`: Session pooler (5432)
+   - `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+     `SUPABASE_SERVICE_ROLE_KEY`: Supabase → Project Settings → API
+   - `NEXT_PUBLIC_SITE_URL`: Vercel'in verdiği adres
+   - `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (en az 32 karakter rastgele)
+
 ## Yol haritası
 
 - [x] 1. İskelet: ALB kodu alındı, çoklu marka / bayi / hizmet yapısı temizlendi
