@@ -269,16 +269,6 @@
   100% { transform: scale(1); }
 }
 
-/* Kayan şerit (marquee). İçerik iki kez basılır, yarısı kadar kayar. */
-.hj-marquee { overflow: hidden; }
-.hj-marquee-track {
-  display: flex;
-  width: max-content;
-  animation: hj-marquee 28s linear infinite;
-}
-.hj-marquee:hover .hj-marquee-track { animation-play-state: paused; }
-@keyframes hj-marquee { to { transform: translateX(-50%); } }
-
 /* Kategori kutusundaki ikon üzerine gelince sallanır */
 .hj-wiggle-parent:hover .hj-wiggle { animation: hj-wiggle 600ms ease-in-out; }
 @keyframes hj-wiggle {
@@ -311,6 +301,6 @@
 @media (prefers-reduced-motion: reduce) {
   .btn-sticker, .btn-sticker:hover, .btn-sticker:active { transition: none; transform: none; }
   .btn-dalga, .btn-sticker.btn-acik:hover::before { animation: none !important; }
-  .hj-marquee-track, .hj-bounce, .hj-wiggle, .btn-sticker .btn-ok { animation: none !important; }
+  .hj-bounce, .hj-wiggle, .btn-sticker .btn-ok { animation: none !important; }
   .hj-card, .hj-card:hover { transform: none; }
 }

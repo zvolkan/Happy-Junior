@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: BRAND.description,
 }
 
-/** Ana sayfadaki güven şeridi — müşterinin sipariş öncesi en çok sorduğu dört konu. */
+/** Ana sayfadaki güven bilgileri — müşterinin sipariş öncesi en çok sorduğu dört konu. */
 const GUVEN: { icon: IconName; title: string; desc: string }[] = [
   { icon: 'kilit', title: 'Havale/EFT ile güvenli ödeme', desc: 'IBAN bilgisi sipariş sonrası gösterilir' },
   { icon: 'kargo', title: 'Kargo ya da mağazadan teslim', desc: 'Anamur içi mağazadan teslim seçeneği' },
@@ -44,21 +44,21 @@ export default async function AnaSayfa() {
     <>
       <BrandHeroSection brandKey={brandKey} urunler={brandProducts} />
 
-      {/* ── KAYAN ŞERİT: sipariş öncesi en çok sorulan dört konu ── */}
-      <section aria-label="Alışveriş bilgileri" className="hj-marquee border-y-2 border-ink bg-sun py-3.5">
-        <div className="hj-marquee-track">
-          {[0, 1].map((tekrar) => (
-            <ul key={tekrar} aria-hidden={tekrar === 1} className="flex shrink-0 items-center">
-              {GUVEN.map((item) => (
-                <li key={item.title} className="flex items-center gap-3 px-8 font-display text-lg font-bold text-ink whitespace-nowrap">
-                  <Icon name={item.icon} className="h-6 w-6" />
-                  {item.title}
-                  <span className="ml-8 text-brand-600" aria-hidden="true">✦</span>
-                </li>
-              ))}
-            </ul>
+      {/* ── GÜVEN BİLGİLERİ: sipariş öncesi en çok sorulan dört konu ── */}
+      <section aria-label="Alışveriş bilgileri" className="border-b border-ink/5 bg-white">
+        <ul className="container-main grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5 py-7">
+          {GUVEN.map((item) => (
+            <li key={item.title} className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                <Icon name={item.icon} className="h-5 w-5" />
+              </span>
+              <span>
+                <span className="block text-sm font-bold leading-snug text-ink">{item.title}</span>
+                <span className="mt-0.5 block text-xs leading-snug text-ink/60">{item.desc}</span>
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* ── KATEGORİLER ── */}
