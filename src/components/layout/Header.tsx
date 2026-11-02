@@ -7,6 +7,7 @@ import { BRAND } from '@/lib/constants'
 import { useCart } from '@/hooks/useCart'
 import { useCartStore } from '@/store/cartStore'
 import BrandLogo from '@/components/ui/BrandLogo'
+import MarkaYazisi from '@/components/ui/MarkaYazisi'
 import UserMenuButton from '@/components/layout/UserMenuButton'
 import MobileUserSection from '@/components/layout/MobileUserSection'
 
@@ -168,10 +169,8 @@ export default function Header() {
                 className="flex items-center flex-shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
                 onClick={() => setMenuOpen(false)}
               >
-                <BrandLogo boyut="sm" />
-                <span className="ml-2 font-display text-xl sm:text-2xl font-extrabold tracking-tight text-brand-600">
-                  {BRAND.name}
-                </span>
+                <BrandLogo boyut="lg" className="-my-2 !h-11 !w-11 sm:!h-14 sm:!w-14" />
+                <MarkaYazisi className="ml-1 text-[14px] min-[400px]:text-[16px] sm:text-[23px]" />
               </Link>
 
               </div>

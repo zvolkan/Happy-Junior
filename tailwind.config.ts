@@ -12,6 +12,8 @@ const config: Config = {
         sans: ['"Nunito Variable"', 'Nunito', 'system-ui', 'sans-serif'],
         // Başlıklar: karakterli, geniş-dar ekseni olan grotesk
         display: ['"Bricolage Grotesque Variable"', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+        // Yalnızca "HAPPY JUNIOR" yazısı: mağaza logosundaki harflere en yakın ücretsiz yazı tipi
+        logo: ['Chango', 'system-ui', 'sans-serif'],
       },
       colors: {
         // ── Mağaza rengi ──────────────────────────────────────────────────

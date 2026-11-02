@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import '@fontsource-variable/bricolage-grotesque'
 import '@fontsource-variable/nunito'
+// Logo yazısı; yalnızca Latin harfleri gerekiyor (HAPPY JUNIOR)
+import '@fontsource/chango/latin-400.css'
 import './globals.css'
 import '@/styles/animations.css'
 import '@/styles/brand.css'

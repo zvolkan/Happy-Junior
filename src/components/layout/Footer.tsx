@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { SATICI } from '@/lib/legal'
 import BrandLogo from '@/components/ui/BrandLogo'
+import MarkaYazisi from '@/components/ui/MarkaYazisi'
 import { BRAND, SITE_CONFIG } from '@/lib/constants'
 import { telefonGoster, telefonArama } from '@/lib/utils'
 
@@ -38,8 +39,10 @@ export default function Footer() {
             {/* Mağaza + sosyal medya */}
             <div className="flex flex-col gap-5">
               <Link href="/" className="flex items-center gap-3 group">
-                <BrandLogo boyut="md" />
-                <span className="font-display text-brand-400 font-extrabold text-2xl leading-tight">{BRAND.name}</span>
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-paper">
+                  <BrandLogo boyut="lg" />
+                </span>
+                <MarkaYazisi className="text-[19px]" kontur="#FFFFFF" />
               </Link>
               <p className="text-white/75 text-sm leading-relaxed">{BRAND.description}</p>
               <a

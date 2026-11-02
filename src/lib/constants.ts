@@ -18,11 +18,11 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     key: 'happy-junior',
     name: 'Happy Junior',
     shortCode: 'HJ',
-    // TODO(müşteri): logo dosyası gelince `public/images/happy-junior-logo.png`
-    // olarak ekleyip aşağıdaki iki satırı açın. Logo yokken BrandLogo yedek
-    // ikonu gösterir.
-    // logo: '/images/happy-junior-logo.png',
-    // logoAspect: { width: 512, height: 512 },
+    // Mağazanın kendi logosundaki ayıcık; WhatsApp'tan gelen düşük çözünürlüklü
+    // dosya 4 kat büyütülüp arka planı temizlendi. Yazı kısmı görsel değil,
+    // MarkaYazisi bileşeniyle metin olarak çiziliyor.
+    logo: '/images/logo/ayicik.png',
+    logoAspect: { width: 512, height: 512 },
     tagline: 'Minikler için\nözenle seçildi',
     subtitle: 'Anamur’dan Türkiye’nin her yerine',
     description:
