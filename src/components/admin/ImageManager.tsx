@@ -30,7 +30,6 @@ export default function ImageManager({ productId, productName, initialImages }: 
   const [images, setImages] = useState<ProductImageDto[]>(initialImages)
   const [uploading, setUploading] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [manualUrl, setManualUrl] = useState('')
 
   const busy = uploading || isPending
 
@@ -81,17 +80,6 @@ export default function ImageManager({ productId, productName, initialImages }: 
     }
 
     setUploading(false)
-  }
-
-  const addManual = () => {
-    const url = manualUrl.trim()
-    if (!url) return
-    startTransition(async () => {
-      if (apply(await addProductImage(productId, url, productName))) {
-        setManualUrl('')
-        toast.success('Görsel eklendi')
-      }
-    })
   }
 
   const remove = (id: number) => {
@@ -234,30 +222,6 @@ export default function ImageManager({ productId, productName, initialImages }: 
             }}
             className="block text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
           />
-        </div>
-
-        <div>
-          <label htmlFor="gorsel-url" className="block text-sm font-medium text-gray-700 mb-1">
-            veya Görsel URL&apos;si
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="gorsel-url"
-              value={manualUrl}
-              onChange={(e) => setManualUrl(e.target.value)}
-              placeholder="/images/urun-adi.jpg"
-              disabled={busy || images.length >= MAX_IMAGES}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-            />
-            <button
-              type="button"
-              onClick={addManual}
-              disabled={busy || !manualUrl.trim() || images.length >= MAX_IMAGES}
-              className="btn-press px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 disabled:opacity-40"
-            >
-              Ekle
-            </button>
-          </div>
         </div>
 
         {uploading && (

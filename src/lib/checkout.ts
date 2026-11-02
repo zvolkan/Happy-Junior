@@ -78,7 +78,10 @@ export function extractVat(grossAmount: number, vatRatePercent: number) {
 
 
 export interface OrderTotals {
+  /** Ürünlerin toplamı (indirimden önce) */
   subtotal: number
+  /** Kupon indirimi (yoksa 0) */
+  discount: number
   shippingFee: number
   total: number
 }
@@ -86,16 +89,23 @@ export interface OrderTotals {
 /**
  * Sipariş toplamı.
  *
- * NOT: Gösterilen fiyatlar KDV DAHİLDİR. Eskiden sepet sayfası ayrı bir KDV
- * satırı gösterip toplama eklemiyordu; bu da sipariş detayındaki "KDV dahil"
- * ifadesiyle çelişiyordu. Artık tek bir yaklaşım var: fiyatlar KDV dahil.
+ * NOT: Gösterilen fiyatlar KDV DAHİLDİR; ayrı KDV satırı toplama eklenmez.
+ *
+ * Kupon indirimi yalnızca ürün ara toplamına uygulanır, kargoya değil.
+ * Ücretsiz kargo sınırı İNDİRİMLİ tutara bakar: 520 TL'lik sepete %10 kupon
+ * girilince müşteri 468 TL öder ve kargo ücreti eklenir. Sepet ve ödeme
+ * ekranı bunu aynı fonksiyonla hesapladığı için müşteri farkı önceden görür.
  */
-export function calculateTotals(subtotal: number): OrderTotals {
+export function calculateTotals(subtotal: number, discountPercent = 0): OrderTotals {
   const sub = money(subtotal)
-  const shippingFee = calculateShipping(sub)
+  const oran = Number.isFinite(discountPercent) ? Math.min(Math.max(discountPercent, 0), 90) : 0
+  const discount = money((sub * oran) / 100)
+  const indirimli = money(sub - discount)
+  const shippingFee = calculateShipping(indirimli)
   return {
     subtotal: sub,
+    discount,
     shippingFee,
-    total: money(sub + shippingFee),
+    total: money(indirimli + shippingFee),
   }
 }

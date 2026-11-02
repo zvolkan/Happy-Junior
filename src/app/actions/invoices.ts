@@ -110,8 +110,8 @@ export async function faturaYukleAksiyon(formData: FormData): Promise<FaturaSonu
   // düşse bile fatura yüklenmiş sayılır, hata sipariş notuna yazılır.
   await notifyInvoiceReady(orderId)
 
-  revalidatePath(`/admin/${order.brand.key}/siparisler/${orderId}`)
-  revalidatePath(`/admin/${order.brand.key}/siparisler`)
+  revalidatePath(`/admin/siparisler/${orderId}`)
+  revalidatePath(`/admin/siparisler`)
   revalidatePath(`/hesabim/siparislerim/${orderId}`)
 
   return { ok: true, mesaj: 'Fatura yüklendi ve müşteriye bilgi e-postası gönderildi.' }
@@ -141,8 +141,8 @@ export async function faturaSilAksiyon(orderId: string): Promise<FaturaSonuc> {
     },
   })
 
-  revalidatePath(`/admin/${order.brand.key}/siparisler/${orderId}`)
-  revalidatePath(`/admin/${order.brand.key}/siparisler`)
+  revalidatePath(`/admin/siparisler/${orderId}`)
+  revalidatePath(`/admin/siparisler`)
   revalidatePath(`/hesabim/siparislerim/${orderId}`)
 
   return { ok: true, mesaj: 'Fatura kaldırıldı.' }

@@ -15,6 +15,7 @@ const BOLUMLER: { yol: string; ad: string }[] = [
   { yol: '', ad: 'Özet' },
   { yol: '/siparisler', ad: 'Siparişler' },
   { yol: '/urunler', ad: 'Ürünler' },
+  { yol: '/kuponlar', ad: 'Kuponlar' },
   { yol: '/iadeler', ad: 'İadeler' },
   { yol: '/mesajlar', ad: 'Mesajlar' },
   { yol: '/blog', ad: 'Blog' },

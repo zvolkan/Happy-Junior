@@ -98,6 +98,9 @@ export interface OrderEmailData {
   customerName: string
   items: OrderEmailItem[]
   subtotal: number
+  /** Kupon indirimi (yoksa 0) */
+  discount?: number
+  couponCode?: string | null
   shippingFee: number
   total: number
   shipFullName: string
@@ -131,7 +134,15 @@ function totalsRows(data: OrderEmailData): string {
     <tr>
       <td style="padding:10px 0 4px;font-size:14px;color:#71717a;">Ara Toplam</td>
       <td align="right" style="padding:10px 0 4px;font-size:14px;">${money(data.subtotal)}</td>
-    </tr>
+    </tr>${
+      data.discount
+        ? `
+    <tr>
+      <td style="padding:4px 0;font-size:14px;color:#15803d;">İndirim${data.couponCode ? ` (${data.couponCode})` : ''}</td>
+      <td align="right" style="padding:4px 0;font-size:14px;color:#15803d;">−${money(data.discount)}</td>
+    </tr>`
+        : ''
+    }
     <tr>
       <td style="padding:4px 0;font-size:14px;color:#71717a;">Kargo</td>
       <td align="right" style="padding:4px 0;font-size:14px;">${
@@ -204,6 +215,7 @@ export function orderConfirmationEmail(data: OrderEmailData) {
     ...data.items.map((i) => `${i.name} × ${i.quantity} ${i.unit} — ${money(i.totalPrice)}`),
     '',
     `Ara toplam: ${money(data.subtotal)}`,
+    ...(data.discount ? [`İndirim${data.couponCode ? ` (${data.couponCode})` : ''}: -${money(data.discount)}`] : []),
     `Kargo: ${data.shippingFee === 0 ? 'Ücretsiz' : money(data.shippingFee)}`,
     `Toplam: ${money(data.total)} (KDV dahil)`,
     '',

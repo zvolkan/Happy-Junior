@@ -8,6 +8,7 @@ import { generateOrderNumber, isUniqueConstraintError } from '@/lib/order-number
 import { getSiteUrl } from '@/lib/site-url'
 import { reserveStock, YetersizStokHatasi } from '@/lib/stock'
 import { rateLimit } from '@/lib/rate-limit'
+import { kuponDogrula } from '@/lib/kupon'
 
 /** Sözleşme metinleri değiştiğinde artırılmalı — hangi sürümün onaylandığı kaydedilir */
 const CONTRACT_VERSION = 'hj-2026-10-1'
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
     addressData?: Record<string, string>
     brandKey?: string
     contractApproved?: boolean
+    couponCode?: string
     invoice?: {
       type?: string
       title?: string
@@ -65,7 +67,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Geçersiz istek.' }, { status: 400 })
   }
 
-  const { cartItems, addressData, brandKey, contractApproved, invoice } = body
+  const { cartItems, addressData, brandKey, contractApproved, invoice, couponCode } = body
 
   // Mesafeli satış sözleşmesi onayı sunucuda da zorunlu — istemci kontrolü
   // atlanabilir ve onay kaydı yasal ispat için gerekli.
@@ -188,10 +190,30 @@ export async function POST(req: NextRequest) {
   // aksi hâlde kayan nokta yuvarlaması 1 kuruşluk fark yaratıp isteği bozabilir.
   const lineTotals = validated.map((i) => money(i.unitPrice * i.quantity))
   const subtotalRaw = lineTotals.reduce((sum, value) => sum + value, 0)
-  const { subtotal, shippingFee, total } = calculateTotals(subtotalRaw)
+
+  // ── İndirim kuponu ───────────────────────────────────────────────────────
+  // Kupon burada YENİDEN doğrulanır; ekranda kabul edilmiş olması yetmez
+  // (süresi o arada dolmuş ya da kullanım hakkı bitmiş olabilir).
+  let kupon: { kod: string; yuzde: number } | null = null
+  if (typeof couponCode === 'string' && couponCode.trim()) {
+    const sonuc = await kuponDogrula(couponCode, user.id, money(subtotalRaw))
+    if (!sonuc.ok) return NextResponse.json({ error: sonuc.hata }, { status: 400 })
+    kupon = { kod: sonuc.kod, yuzde: sonuc.yuzde }
+  }
+
+  const { subtotal, discount, shippingFee, total } = calculateTotals(subtotalRaw, kupon?.yuzde ?? 0)
+
+  // İndirimi satırlara oranla dağıt. Ödeme kuruluşu sepet kalemlerinin
+  // toplamının tahsil edilen tutara eşit olmasını istiyor; KDV de indirimli
+  // tutar üzerinden hesaplanmalı. Yuvarlama artığı son satıra eklenir.
+  const paidLineTotals = lineTotals.map((t) => (subtotal > 0 ? money(t - (discount * t) / subtotal) : t))
+  if (discount > 0 && paidLineTotals.length > 0) {
+    const fark = money(subtotal - discount - paidLineTotals.reduce((a, b) => a + b, 0))
+    paidLineTotals[paidLineTotals.length - 1] = money(paidLineTotals[paidLineTotals.length - 1] + fark)
+  }
 
   // Fatura için KDV matrahını ayrıştır (fiyatlar KDV dahil girilir)
-  const lineVats = validated.map((item, index) => extractVat(lineTotals[index], item.vatRate).vat)
+  const lineVats = validated.map((item, index) => extractVat(paidLineTotals[index], item.vatRate).vat)
   // Kargo ücreti %20 KDV'ye tabidir
   const shippingVat = shippingFee > 0 ? extractVat(shippingFee, 20).vat : 0
   const taxAmount = money(lineVats.reduce((sum, v) => sum + v, 0) + shippingVat)
@@ -292,6 +314,8 @@ export async function POST(req: NextRequest) {
     shippingFee,
     taxAmount,
     totalAmount: total,
+    couponCode: kupon?.kod ?? null,
+    discountAmount: discount > 0 ? discount : null,
     shipFullName: contactName,
     shipPhone: String(addr.phone ?? ''),
     shipLine1: String(addr.line1),
@@ -387,7 +411,7 @@ export async function POST(req: NextRequest) {
     name: item.name.slice(0, 100),
     category1: 'Ürün',
     itemType: 'PHYSICAL',
-    price: lineTotals[index].toFixed(2),
+    price: paidLineTotals[index].toFixed(2),
   }))
 
   if (shippingFee > 0) {

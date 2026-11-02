@@ -3,6 +3,7 @@ import Link from 'next/link'
 import MagazaLogo from '@/components/ui/MagazaLogo'
 import GoogleGiris from '@/components/auth/GoogleGiris'
 import { signUp, signInWithGoogle } from '@/app/actions/auth'
+import { hosgeldinKuponu } from '@/lib/kupon'
 
 export const metadata: Metadata = {
   // Giriş/kayıt sayfalarının arama sonuçlarında hiçbir işi yok ve
@@ -18,6 +19,7 @@ export default async function KayitPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const params = await searchParams
+  const hosgeldin = await hosgeldinKuponu().catch(() => null)
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-16">
@@ -30,6 +32,13 @@ export default async function KayitPage({
           <h1 className="text-2xl font-bold text-gray-900">Hesap Oluşturun</h1>
           <p className="text-gray-500 text-sm mt-1">Sipariş takibi ve hızlı alışveriş için kayıt olun</p>
         </div>
+
+        {hosgeldin && (
+          <div className="mb-5 rounded-2xl border border-dashed border-brand-300 bg-brand-50 px-4 py-3 text-center text-sm text-brand-800">
+            İlk siparişinize özel <span className="font-bold">%{hosgeldin.percent} indirim</span>. Ödeme sayfasında{' '}
+            <span className="font-mono font-bold">{hosgeldin.code}</span> kodunu girin.
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
           {params.error && (

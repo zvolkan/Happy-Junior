@@ -4,6 +4,8 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
+import { BRAND } from '@/lib/constants'
+import { slugify } from '@/lib/utils'
 import { deleteProductImage, getSignedUploadUrl } from '@/lib/supabase-admin'
 import { createAdminToken, verifyAdminToken, timingSafeEqualHash } from '@/lib/admin-auth'
 import { safeInternalPath } from '@/lib/safe-redirect'
@@ -186,72 +188,74 @@ export async function getProductForEdit(id: string) {
 
 
 // ─── ÜRÜN FORMU DOĞRULAMA ────────────────────────────────────────────────────
+//
+// Form sadeleştirildi: mağaza tek (marka seçimi yok), slug ve ürün kodu
+// sistemde üretiliyor, birim ve teknik özellik alanları kaldırıldı (bilgiler
+// açıklamaya yazılıyor). Kategori listede yoksa formdan yenisi açılabiliyor.
 
+/** Formdan okunan, veritabanına yazılmaya hazır alanlar */
 interface ProductInput {
-  slug: string
   name: string
-  categoryId: number
-  brandId: number
   price: number
   salePrice: number | null
   stockQuantity: number
-  unit: string
-  sku: string | null
   description: string
   shortDescription: string
   isActive: boolean
   isFeatured: boolean
-  productBrand: string | null
   vatRate: number
 }
 
-/**
- * Form verisini doğrular.
- *
- * Eskiden `parseFloat(formData.get('price'))` doğrudan Prisma'ya gidiyordu;
- * boş veya geçersiz girdide NaN oluşup "Invalid value" hatasıyla admin genel
- * hata sayfasına düşüyordu.
- */
+/** Kategori seçimi: mevcut bir alt kategori ya da açılacak yeni kategori(ler) */
+type KategoriSecimi =
+  | { tur: 'mevcut'; categoryId: number }
+  | { tur: 'yeni'; anaId: number | null; yeniAnaAdi: string | null; yeniAltAdi: string }
+
 /**
  * Ürün formu işlemlerinin dönüş tipi.
  *
- * Bu aksiyonlar eskiden `throw new Error('İndirimli fiyat, normal fiyattan
- * düşük olmalıdır.')` gibi net mesajlar fırlatıyordu. Next.js üretim
- * derlemesinde sunucu aksiyonundan fırlatılan hatanın MESAJINI GİZLİYOR;
- * istemciye yalnızca anlamsız bir digest ulaşıyor. Yani yönetici formu
- * kaydedemiyor ama neden kaydedemediğini de göremiyordu. Hata fırlatmak
- * yerine sonuç nesnesi dönülüyor.
- *
+ * Next.js üretim derlemesinde sunucu aksiyonundan fırlatılan hatanın mesajını
+ * gizliyor; bu yüzden hata fırlatmak yerine sonuç nesnesi dönülüyor.
  * Başarı durumunda fonksiyon `redirect()` ile bittiği için hiç dönmüyor.
  */
 export type ProductActionResult = { ok: false; error: string }
 
+const YENI = 'yeni'
+
 /** Doğrulama hatasında mesajı, başarıda ayrıştırılmış girdiyi döner */
-function parseProductForm(formData: FormData): ProductInput | string {
+function parseProductForm(formData: FormData): { input: ProductInput; kategori: KategoriSecimi } | string {
+  const metin = (key: string) => ((formData.get(key) as string | null) ?? '').trim()
   const num = (key: string): number => {
-    const raw = (formData.get(key) as string | null)?.trim()
-    const value = Number(raw)
+    const value = Number(metin(key))
     return Number.isFinite(value) ? value : NaN
   }
 
-  const slug = ((formData.get('slug') as string) ?? '').trim().toLowerCase()
-  const name = ((formData.get('name') as string) ?? '').trim()
-  const categoryId = num('categoryId')
-  const brandId = num('brandId')
+  const name = metin('name')
   const price = num('price')
-  const salePriceRaw = (formData.get('salePrice') as string | null)?.trim()
-  const stockRaw = (formData.get('stockQuantity') as string | null)?.trim()
+  const salePriceRaw = metin('salePrice')
+  const stockRaw = metin('stockQuantity')
 
   if (!name || name.length < 2) return 'Ürün adı en az 2 karakter olmalıdır.'
   if (name.length > 255) return 'Ürün adı çok uzun (en fazla 255 karakter).'
 
-  if (!slug) return 'Slug (URL adı) zorunludur.'
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    return 'Slug yalnızca küçük harf, rakam ve tire içerebilir (örn. "taban-gubresi").'
+  // ── Kategori ──
+  const anaRaw = metin('anaKategori')
+  const altRaw = metin('altKategori')
+  let kategori: KategoriSecimi
+  if (anaRaw === YENI || altRaw === YENI) {
+    const yeniAnaAdi = anaRaw === YENI ? metin('yeniAnaKategori') : null
+    const yeniAltAdi = metin('yeniAltKategori')
+    const anaId = anaRaw === YENI ? null : Number(anaRaw)
+    if (anaRaw === YENI && (!yeniAnaAdi || yeniAnaAdi.length < 2)) return 'Yeni ana kategorinin adını yazın.'
+    if (anaId !== null && (!Number.isInteger(anaId) || anaId <= 0)) return 'Bir ana kategori seçin.'
+    if (!yeniAltAdi || yeniAltAdi.length < 2) return 'Yeni alt kategorinin adını yazın.'
+    if ((yeniAnaAdi?.length ?? 0) > 100 || yeniAltAdi.length > 100) return 'Kategori adı çok uzun.'
+    kategori = { tur: 'yeni', anaId, yeniAnaAdi, yeniAltAdi }
+  } else {
+    const categoryId = Number(altRaw)
+    if (!Number.isInteger(categoryId) || categoryId <= 0) return 'Bir alt kategori seçin.'
+    kategori = { tur: 'mevcut', categoryId }
   }
-
-  if (!Number.isInteger(categoryId) || categoryId <= 0) return 'Geçerli bir alt kategori seçin.'
-  if (!Number.isInteger(brandId) || brandId <= 0) return 'Geçerli bir marka seçin.'
 
   // Sıfır fiyat bilerek reddediliyor: ücretsiz ürün diye bir senaryo yok ve
   // sıfır, ödeme akışında satır toplamını da sıfırlıyor.
@@ -261,11 +265,7 @@ function parseProductForm(formData: FormData): ProductInput | string {
   let salePrice: number | null = null
   if (salePriceRaw) {
     const value = Number(salePriceRaw)
-    // DİKKAT: "0" boş olmayan bir metin olduğu için yukarıdaki koşuldan geçiyor.
-    // Sıfır kontrolü olmadığında indirimli fiyat 0 kaydediliyordu; sepet
-    // `salePrice > 0` kuralıyla dolu fiyatı gösterirken ödeme tarafı `??` ile
-    // sıfırı geçirdiği için ürün bedavaya satılıyordu ve fark hiçbir ekranda
-    // görünmüyordu. Kampanyayı kapatmak için alan BOŞ bırakılmalı, 0 yazılmamalı.
+    // "0" yazılırsa ürün bedavaya satılırdı; kampanyayı kapatmak için alan boş bırakılır.
     if (!Number.isFinite(value) || value <= 0)
       return 'İndirimli fiyat sıfırdan büyük olmalıdır. Kampanyayı kaldırmak için alanı boş bırakın.'
     if (value >= price) return 'İndirimli fiyat, normal fiyattan düşük olmalıdır.'
@@ -278,43 +278,31 @@ function parseProductForm(formData: FormData): ProductInput | string {
   }
 
   return {
-    slug,
-    name,
-    categoryId,
-    brandId,
-    price,
-    salePrice,
-    stockQuantity,
-    unit: ((formData.get('unit') as string) || 'adet').slice(0, 50),
-    sku: ((formData.get('sku') as string) || '').trim().slice(0, 100) || null,
-    description: ((formData.get('description') as string) || '').slice(0, 20000),
-    shortDescription: ((formData.get('shortDescription') as string) || '').slice(0, 1000),
-    isActive: formData.get('isActive') === 'true',
-    isFeatured: formData.get('isFeatured') === 'true',
-    productBrand: ((formData.get('productBrand') as string) || '').trim().slice(0, 100) || null,
-    vatRate: gecerliKdvOrani(formData.get('vatRate')),
+    kategori,
+    input: {
+      name,
+      price,
+      salePrice,
+      stockQuantity,
+      description: metin('description').slice(0, 20000),
+      shortDescription: metin('shortDescription').slice(0, 1000),
+      isActive: formData.get('isActive') === 'true',
+      isFeatured: formData.get('isFeatured') === 'true',
+      vatRate: gecerliKdvOrani(formData.get('vatRate')),
+    },
   }
 }
 
-/** Formda seçilebilen KDV oranları. %1 kaldırıldı, yerine %0 geldi. */
+/** Formda seçilebilen KDV oranları. */
 const KDV_ORANLARI = [0, 10, 20] as const
 
 /**
- * Form alanından KDV oranını okur.
- *
- * DİKKAT — buradaki tip kontrolü şart. Eskiden kod şöyleydi:
- *
- *   [1, 10, 20].includes(Number(formData.get('vatRate'))) ? ... : 20
- *
- * `formData.get()` alan yoksa `null` döner ve `Number(null)` 0'dır. Liste
- * `[1, 10, 20]` iken 0 listede olmadığı için sessizce 20'ye düşüyordu, yani
- * kaza sonucu doğru davranıyordu. Liste `[0, 10, 20]` olunca aynı kod, alan
- * hiç gönderilmemiş bir formda ürünü KDV'siz yapardı. Bu yüzden önce değerin
- * gerçekten gönderilmiş bir metin olduğunu doğruluyoruz.
+ * Form alanından KDV oranını okur. Alan hiç gönderilmemişse `Number(null)`
+ * 0 olur ve ürün sessizce KDV'siz kalırdı; bu yüzden önce değerin gerçekten
+ * gönderilmiş bir metin olduğu doğrulanıyor.
  */
 function gecerliKdvOrani(deger: FormDataEntryValue | null): number {
   if (typeof deger !== 'string' || deger.trim() === '') return 20
-
   const oran = Number(deger)
   return (KDV_ORANLARI as readonly number[]).includes(oran) ? oran : 20
 }
@@ -322,16 +310,95 @@ function gecerliKdvOrani(deger: FormDataEntryValue | null): number {
 /** Prisma'nın benzersizlik/ilişki hatalarını okunabilir mesaja çevirir */
 function friendlyPrismaError(error: unknown): string {
   const code = (error as { code?: string })?.code
-  const target = ((error as { meta?: { target?: string[] } })?.meta?.target ?? []).join(', ')
-
-  if (code === 'P2002') {
-    if (target.includes('slug')) return 'Bu slug başka bir üründe kullanılıyor. Farklı bir slug girin.'
-    if (target.includes('sku')) return 'Bu SKU başka bir üründe kullanılıyor.'
-    return 'Bu değer başka bir kayıtta kullanılıyor.'
-  }
-  if (code === 'P2003') return 'Seçilen kategori veya marka bulunamadı.'
+  if (code === 'P2002') return 'Bu değer başka bir kayıtta kullanılıyor.'
+  if (code === 'P2003') return 'Seçilen kategori bulunamadı.'
   if (code === 'P2025') return 'Kayıt bulunamadı.'
   return 'İşlem tamamlanamadı. Lütfen bilgileri kontrol edip tekrar deneyin.'
+}
+
+/** Mağazanın veritabanındaki marka kaydı (tek mağaza) */
+async function magazaBrandId(): Promise<number> {
+  const brand = await prisma.brand.findUnique({ where: { key: BRAND.key }, select: { id: true } })
+  if (!brand) throw new Error(`Marka kaydı yok: ${BRAND.key}`)
+  return brand.id
+}
+
+/** Tabloda henüz kullanılmayan bir slug üretir: ad, ad-2, ad-3 … */
+async function bosSlug(
+  taban: string,
+  kullanimda: (slug: string) => Promise<boolean>,
+): Promise<string> {
+  const kok = (slugify(taban) || 'urun').slice(0, 90)
+  for (let i = 1; i < 500; i++) {
+    const aday = i === 1 ? kok : `${kok}-${i}`
+    if (!(await kullanimda(aday))) return aday
+  }
+  return `${kok}-${Date.now()}`
+}
+
+/**
+ * Sıradaki ürün kodu: HJ-00001, HJ-00002 …
+ * Aynı anda iki ürün kaydedilirse ikisi aynı kodu alabilir; benzersizlik
+ * kısıtı ikinciyi reddeder ve createProduct yeniden dener.
+ */
+async function siradakiUrunKodu(): Promise<string> {
+  const son = await prisma.product.findFirst({
+    where: { sku: { startsWith: 'HJ-' } },
+    orderBy: { sku: 'desc' },
+    select: { sku: true },
+  })
+  const n = son?.sku ? Number(son.sku.slice(3)) || 0 : 0
+  return `HJ-${String(n + 1).padStart(5, '0')}`
+}
+
+/**
+ * Seçilen kategoriyi çözer; "Diğer" seçildiyse yeni kategori(ler)i açar.
+ * Aynı adlı kategori zaten varsa yenisi açılmaz, mevcut olan kullanılır.
+ */
+async function kategoriCoz(secim: KategoriSecimi, brandId: number): Promise<number | string> {
+  if (secim.tur === 'mevcut') {
+    const kat = await prisma.category.findUnique({ where: { id: secim.categoryId }, select: { id: true } })
+    return kat ? kat.id : 'Seçilen kategori bulunamadı.'
+  }
+
+  const adlaBul = (ad: string, parentId: number | null) =>
+    prisma.category.findFirst({
+      where: { brandId, parentId, name: { equals: ad, mode: 'insensitive' } },
+      select: { id: true },
+    })
+
+  const kategoriAc = async (ad: string, parentId: number | null) => {
+    const slug = await bosSlug(ad, async (s) => !!(await prisma.category.findUnique({ where: { slug: s }, select: { id: true } })))
+    const sonSira = await prisma.category.aggregate({ where: { brandId, parentId }, _max: { sortOrder: true } })
+    const yeni = await prisma.category.create({
+      data: { brandId, parentId, name: ad, slug, sortOrder: (sonSira._max.sortOrder ?? 0) + 1 },
+      select: { id: true },
+    })
+    return yeni.id
+  }
+
+  let anaId = secim.anaId
+  if (anaId === null) {
+    anaId = (await adlaBul(secim.yeniAnaAdi!, null))?.id ?? (await kategoriAc(secim.yeniAnaAdi!, null))
+  } else if (!(await prisma.category.findUnique({ where: { id: anaId }, select: { id: true } }))) {
+    return 'Seçilen ana kategori bulunamadı.'
+  }
+
+  return (await adlaBul(secim.yeniAltAdi, anaId))?.id ?? (await kategoriAc(secim.yeniAltAdi, anaId))
+}
+
+/** İstemcinin Supabase'e yüklediği görsellerin adresleri (sıralı, en fazla 10) */
+function gorselAdresleri(formData: FormData): string[] {
+  try {
+    const liste = JSON.parse((formData.get('imageUrls') as string) || '[]') as unknown
+    if (!Array.isArray(liste)) return []
+    return liste
+      .map((u) => gecerliGorselAdresi(typeof u === 'string' ? u : null))
+      .filter((u): u is string => !!u)
+      .slice(0, 10)
+  } catch {
+    return []
+  }
 }
 
 // ─── CREATE ───────────────────────────────────────────────────────────────────
@@ -343,70 +410,65 @@ export async function createProduct(formData: FormData): Promise<ProductActionRe
     return { ok: false, error: 'Oturumunuz sona ermiş görünüyor. Lütfen yeniden giriş yapın.' }
   }
 
-  // NOT: Eskiden burada `formData.get('imageFile')` ile ikinci bir yükleme yolu
-  // vardı. O yolda ne uzantı beyaz listesi, ne MIME kontrolü, ne boyut sınırı
-  // vardı; uzantı doğrudan istemcinin verdiği dosya adından türüyor ve
-  // `contentType` olarak yine istemcinin bildirdiği tür kullanılıyordu — yani
-  // herkese açık kovaya `text/html` içerikli bir dosya yazılabiliyordu.
-  // Arayüz bu yolu zaten kullanmıyor (ProductForm gönderimden önce alanı
-  // siliyor, dosya doğrudan `createSignedUploadUrl` ile Supabase'e gidiyor).
-  // Ölü ve tehlikeli olduğu için kaldırıldı.
-  let imageUrl = gecerliGorselAdresi(formData.get('imageUrl') as string | null)
-
   const parsed = parseProductForm(formData)
   if (typeof parsed === 'string') return { ok: false, error: parsed }
-  const input = parsed
+  const { input, kategori } = parsed
+  const gorseller = gorselAdresleri(formData)
 
-  let product: { id: string }
   try {
-    product = await prisma.product.create({
-      data: {
-        ...input,
-        images: imageUrl
-          ? {
-              create: [{ url: imageUrl, altText: input.name, isPrimary: true, sortOrder: 0 }],
-            }
-          : undefined,
-      },
-      select: { id: true },
-    })
+    const brandId = await magazaBrandId()
+    const categoryId = await kategoriCoz(kategori, brandId)
+    if (typeof categoryId === 'string') return { ok: false, error: categoryId }
+
+    const slug = await bosSlug(input.name, async (s) => !!(await prisma.product.findUnique({ where: { slug: s }, select: { id: true } })))
+
+    // Ürün kodu çakışırsa (aynı anda iki kayıt) birkaç kez yeniden dene
+    for (let deneme = 0; ; deneme++) {
+      try {
+        await prisma.product.create({
+          data: {
+            ...input,
+            slug,
+            brandId,
+            categoryId,
+            sku: await siradakiUrunKodu(),
+            images: gorseller.length
+              ? {
+                  create: gorseller.map((url, i) => ({
+                    url,
+                    altText: input.name,
+                    isPrimary: i === 0,
+                    sortOrder: i,
+                  })),
+                }
+              : undefined,
+          },
+          select: { id: true },
+        })
+        break
+      } catch (error) {
+        const hedef = String((error as { meta?: { target?: unknown } })?.meta?.target ?? '')
+        if ((error as { code?: string })?.code === 'P2002' && hedef.includes('sku') && deneme < 3) continue
+        throw error
+      }
+    }
   } catch (error) {
     console.error('[admin] ürün oluşturulamadı:', error)
     return { ok: false, error: friendlyPrismaError(error) }
   }
 
-  // Teknik özellikler — buradaki bir hata ürünü geri almaz, ürün kaydedildi.
-  // Bu yüzden sessizce loglanıp akış sürdürülüyor.
-  try {
-  const specsRaw = formData.get('specs') as string
-  if (specsRaw) {
-    const specs = JSON.parse(specsRaw) as Array<{ name: string; value: string; unit?: string }>
-    for (let i = 0; i < specs.length; i++) {
-      const s = specs[i]
-      if (s.name && s.value) {
-        await prisma.productSpec.create({
-          data: {
-            productId: product.id,
-            specName: s.name,
-            specValue: s.value,
-            specUnit: s.unit || null,
-            sortOrder: i,
-          },
-        })
-      }
-    }
-  }
-  } catch (error) {
-    console.error('[admin] teknik özellikler kaydedilemedi:', error)
-  }
-
   revalidatePath('/admin/urunler')
-  revalidatePath(`/urunler`)
+  revalidatePath('/urunler')
   redirect('/admin/urunler')
 }
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
 
+/**
+ * Ürünü günceller. Slug ve ürün kodu DEĞİŞMEZ: ad değişse bile ürünün adresi
+ * aynı kalır, paylaşılmış bağlantılar ve arama motoru kayıtları bozulmaz.
+ * Görseller bu formdan değil ImageManager'dan yönetiliyor.
+ */
 export async function updateProduct(
   id: string,
   formData: FormData,
@@ -417,81 +479,21 @@ export async function updateProduct(
     return { ok: false, error: 'Oturumunuz sona ermiş görünüyor. Lütfen yeniden giriş yapın.' }
   }
 
-  // NOT: Eskiden burada `formData.get('imageFile')` ile ikinci bir yükleme yolu
-  // vardı. O yolda ne uzantı beyaz listesi, ne MIME kontrolü, ne boyut sınırı
-  // vardı; uzantı doğrudan istemcinin verdiği dosya adından türüyor ve
-  // `contentType` olarak yine istemcinin bildirdiği tür kullanılıyordu — yani
-  // herkese açık kovaya `text/html` içerikli bir dosya yazılabiliyordu.
-  // Arayüz bu yolu zaten kullanmıyor (ProductForm gönderimden önce alanı
-  // siliyor, dosya doğrudan `createSignedUploadUrl` ile Supabase'e gidiyor).
-  // Ölü ve tehlikeli olduğu için kaldırıldı.
-  let imageUrl = gecerliGorselAdresi(formData.get('imageUrl') as string | null)
-  const replaceImage = formData.get('replaceImage') === 'true'
-
   const parsed = parseProductForm(formData)
   if (typeof parsed === 'string') return { ok: false, error: parsed }
-  const input = parsed
+  const { input, kategori } = parsed
 
   try {
-    await prisma.product.update({ where: { id }, data: input })
+    const categoryId = await kategoriCoz(kategori, await magazaBrandId())
+    if (typeof categoryId === 'string') return { ok: false, error: categoryId }
+    await prisma.product.update({ where: { id }, data: { ...input, categoryId } })
   } catch (error) {
     console.error('[admin] ürün güncellenemedi:', id, error)
     return { ok: false, error: friendlyPrismaError(error) }
   }
 
-  // Kapak görselini güncelle.
-  //
-  // Önceden burada `deleteMany` ile ürünün TÜM görselleri siliniyordu. Çoklu
-  // görsel desteğiyle birlikte bu, formu her kaydedişte galerinin silinmesi
-  // anlamına gelirdi. Artık yalnızca kapak değiştirilir; diğer görseller kalır.
-  if (imageUrl && replaceImage) {
-    const current = await prisma.productImage.findFirst({
-      where: { productId: id, isPrimary: true },
-      select: { id: true, url: true },
-    })
-
-    if (current) {
-      if (current.url !== imageUrl) {
-        await prisma.productImage.update({
-          where: { id: current.id },
-          data: { url: imageUrl, altText: input.name },
-        })
-        // Storage'daki eski dosyayı temizle (public/ içindekilere dokunma)
-        if (current.url.includes('supabase')) {
-          const fileName = current.url.split('/').pop()
-          if (fileName) await deleteProductImage(fileName).catch(() => {})
-        }
-      }
-    } else {
-      await prisma.productImage.create({
-        data: { productId: id, url: imageUrl, altText: input.name, isPrimary: true, sortOrder: 0 },
-      })
-    }
-  }
-
-  // Teknik özellikler: sil + yeniden oluştur
-  const specsRaw = formData.get('specs') as string
-  if (specsRaw) {
-    const specs = JSON.parse(specsRaw) as Array<{ name: string; value: string; unit?: string }>
-    await prisma.productSpec.deleteMany({ where: { productId: id } })
-    for (let i = 0; i < specs.length; i++) {
-      const s = specs[i]
-      if (s.name && s.value) {
-        await prisma.productSpec.create({
-          data: {
-            productId: id,
-            specName: s.name,
-            specValue: s.value,
-            specUnit: s.unit || null,
-            sortOrder: i,
-          },
-        })
-      }
-    }
-  }
-
   revalidatePath('/admin/urunler')
-  revalidatePath(`/urunler`)
+  revalidatePath('/urunler')
   redirect('/admin/urunler')
 }
 

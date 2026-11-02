@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
+import { hosgeldinKuponu, KUPON_SAYILAN_SIPARIS } from '@/lib/kupon'
 import CheckoutClient from './_components/CheckoutClient'
 
 export default async function OdemePage() {
@@ -26,5 +27,11 @@ export default async function OdemePage() {
     isDefault: a.isDefault,
   }))
 
-  return <CheckoutClient addresses={addresses} />
+  // Hiç siparişi olmayan üyeye hoş geldin kuponunu hatırlat
+  const [hosgeldin, siparisSayisi] = await Promise.all([
+    hosgeldinKuponu(),
+    prisma.order.count({ where: { userId: user.id, ...KUPON_SAYILAN_SIPARIS } }),
+  ])
+
+  return <CheckoutClient addresses={addresses} hosgeldinKuponu={siparisSayisi === 0 ? hosgeldin : null} />
 }

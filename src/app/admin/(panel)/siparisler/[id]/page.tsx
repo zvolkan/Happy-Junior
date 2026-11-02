@@ -66,11 +66,6 @@ export default async function AdminSiparisDetayPage({
 
   if (!order) notFound()
 
-  // Adres çubuğundaki marka ile siparişin markası tutmuyorsa doğru adrese
-  // gönder. Yoksa "ALB Su" başlığı altında ALB Tarım siparişi açılabiliyordu.
-  if (order.brand.key !== kapsam) {
-    redirect(`/admin/${order.brand.key}/siparisler/${order.id}`)
-  }
 
   const meta = STATUS_META[order.status] ?? {
     label: order.status,
@@ -140,6 +135,12 @@ export default async function AdminSiparisDetayPage({
                 <span>Ara Toplam</span>
                 <span>{formatPrice(order.subtotal ?? itemsTotal)}</span>
               </div>
+              {order.discountAmount != null && Number(order.discountAmount) > 0 && (
+                <div className="flex justify-between text-green-700">
+                  <span>İndirim ({order.couponCode})</span>
+                  <span>−{formatPrice(order.discountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-gray-600">
                 <span>Kargo</span>
                 <span>

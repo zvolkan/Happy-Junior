@@ -361,6 +361,10 @@ model Order {
   paidAt         DateTime? @map("paid_at")
   // "kargo" | "magaza" (Anamur içi mağazadan teslim; kargo ücreti alınmaz)
   deliveryMethod String    @default("kargo") @map("delivery_method") @db.VarChar(20)
+  // İndirim kuponu: kod anlık kopya olarak saklanır (kupon sonradan silinse de
+  // sipariş neyle indirim aldığını bilir); indirim tutarı ara toplamdan düşülür.
+  couponCode     String?   @map("coupon_code") @db.VarChar(40)
+  discountAmount Decimal?  @map("discount_amount") @db.Decimal(10, 2)
   paymentToken   String?   @map("payment_token") @db.VarChar(512)
   paymentStatus  String?   @default("pending") @map("payment_status") @db.VarChar(20)
   paymentId      String?   @map("payment_id") @db.VarChar(100)
@@ -379,7 +383,35 @@ model Order {
   @@index([status])
   @@index([createdAt])
   @@index([paymentToken])
+  @@index([couponCode])
   @@map("orders")
+}
+
+// ─── İNDİRİM KUPONLARI ───────────────────────────────────────────────────────
+//
+// Yönetici panelden açar; müşteri ödeme sayfasında kodu girer. İndirim yüzde
+// olarak ürün ara toplamına uygulanır (kargo ücretine değil).
+model Coupon {
+  id            Int       @id @default(autoincrement())
+  /// Büyük harfe çevrilmiş kod (HOSGELDIN10)
+  code          String    @unique @db.VarChar(40)
+  /// İndirim yüzdesi, 1–90
+  percent       Int
+  description   String?   @db.VarChar(200)
+  isActive      Boolean   @default(true) @map("is_active")
+  /// Yalnızca daha önce siparişi olmayan üyeler kullanabilir
+  onlyNewMembers Boolean  @default(false) @map("only_new_members")
+  /// Kupon toplamda en fazla kaç siparişte kullanılabilir (boş = sınırsız)
+  maxUses       Int?      @map("max_uses")
+  /// Bir üye en fazla kaç kez kullanabilir
+  perUserLimit  Int       @default(1) @map("per_user_limit")
+  /// Kuponun geçerli olduğu en düşük sepet tutarı (boş = alt sınır yok)
+  minAmount     Decimal?  @map("min_amount") @db.Decimal(10, 2)
+  startsAt      DateTime? @map("starts_at")
+  endsAt        DateTime? @map("ends_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("coupons")
 }
 
 // ─── FAVORİLER ────────────────────────────────────────────────────────────────

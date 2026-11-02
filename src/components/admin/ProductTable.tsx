@@ -57,7 +57,7 @@ export default function ProductTable({ products, kapsam }: ProductTableProps) {
             {products.map((product) => {
               const primaryImage = product.images[0]
               const price = Number(product.price)
-              const duzenleYolu = `/admin/${kapsam}/urunler/${product.id}/duzenle`
+              const duzenleYolu = `/admin/urunler/${product.id}/duzenle`
               return (
                 <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                   {/* Görsel — düzenlemeye götürür.

@@ -24,6 +24,8 @@ type SavedAddress = {
 
 type Props = {
   addresses: SavedAddress[]
+  /** İlk siparişi verecek üyeye önerilen kupon (yoksa null) */
+  hosgeldinKuponu?: { code: string; percent: number } | null
 }
 
 function formatPrice(n: number) {
@@ -32,7 +34,7 @@ function formatPrice(n: number) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function CheckoutClient({ addresses }: Props) {
+export default function CheckoutClient({ addresses, hosgeldinKuponu = null }: Props) {
   const items = useCartStore((s: { items: import('@/lib/types').CartItem[] }) => s.items)
   const cartHydrated = useCartStore((s: { hasHydrated: boolean }) => s.hasHydrated)
   const sepetiEsitle = useCartStore.getState().syncWithServer
@@ -92,8 +94,46 @@ export default function CheckoutClient({ addresses }: Props) {
       sum + etkinBirimFiyat(item.product.price, item.product.salePrice) * item.quantity,
     0
   )
+  // ── İndirim kuponu ──
+  // Ekranda gösterim için /api/kupon ile doğrulanır; sipariş oluşturulurken
+  // sunucu kuponu yeniden doğrular ve indirimi kendisi hesaplar.
+  const [kuponGirdi, setKuponGirdi] = useState('')
+  const [kupon, setKupon] = useState<{ code: string; percent: number } | null>(null)
+  const [kuponHata, setKuponHata] = useState<string | null>(null)
+  const [kuponYukleniyor, setKuponYukleniyor] = useState(false)
+
+  async function kuponUygula(kod = kuponGirdi) {
+    if (!kod.trim() || kuponYukleniyor) return
+    setKuponYukleniyor(true)
+    setKuponHata(null)
+    try {
+      const res = await fetch('/api/kupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: kod,
+          cartItems: items.map((i: import('@/lib/types').CartItem) => ({ id: i.product.id, quantity: i.quantity })),
+        }),
+      })
+      const data = (await res.json()) as { error?: string; code?: string; percent?: number }
+      if (!res.ok || !data.code || !data.percent) {
+        setKupon(null)
+        setKuponHata(data.error ?? 'Kupon uygulanamadı.')
+      } else {
+        setKupon({ code: data.code, percent: data.percent })
+        setKuponGirdi('')
+        toast.success(`%${data.percent} indirim uygulandı`)
+      }
+    } catch {
+      setKuponHata('Bağlantı hatası. Tekrar deneyin.')
+    } finally {
+      setKuponYukleniyor(false)
+    }
+  }
+
   // Sepet, ödeme ve sunucu aynı hesabı kullanır
-  const { subtotal, shippingFee: cargoFee, total } = calculateTotals(subtotalRaw)
+  const { subtotal, discount, shippingFee: cargoFee, total } = calculateTotals(subtotalRaw, kupon?.percent ?? 0)
+  const indirimliAraToplam = subtotal - discount
 
   const [selectedAddressId, setSelectedAddressId] = useState<string>(
     addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? ''
@@ -197,6 +237,7 @@ export default function CheckoutClient({ addresses }: Props) {
           addressData,
           brandKey,
           contractApproved,
+          couponCode: kupon?.code,
           invoice: {
             type: invoiceType,
             title: invoiceTitle,
@@ -526,21 +567,88 @@ export default function CheckoutClient({ addresses }: Props) {
                   <span>Ara Toplam</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
+                {kupon && (
+                  <div className="flex justify-between text-green-700">
+                    <span className="flex items-center gap-1.5">
+                      İndirim <span className="rounded bg-green-50 px-1.5 py-0.5 text-xs font-semibold">{kupon.code} · %{kupon.percent}</span>
+                    </span>
+                    <span>−{formatPrice(discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-600">
                   <span>Kargo</span>
                   <span className={cargoFee === 0 ? 'text-green-600 font-medium' : ''}>
                     {cargoFee === 0 ? 'Ücretsiz' : formatPrice(cargoFee)}
                   </span>
                 </div>
-                {subtotal < KARGO_LIMIT && (
+                {indirimliAraToplam < KARGO_LIMIT && (
                   <p className="text-xs text-blue-600 bg-blue-50 rounded-lg px-2.5 py-1.5">
-                    {formatPrice(KARGO_LIMIT - subtotal)} daha ekleyin, kargo ücretsiz!
+                    {formatPrice(KARGO_LIMIT - indirimliAraToplam)} daha ekleyin, kargo ücretsiz!
                   </p>
                 )}
                 <div className="border-t border-gray-100 pt-2 flex justify-between">
                   <span className="font-bold text-gray-900">Toplam</span>
                   <span className="font-bold text-lg text-gray-900">{formatPrice(total)}</span>
                 </div>
+              </div>
+
+              {/* Kupon */}
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                {kupon ? (
+                  <div className="flex items-center justify-between rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">
+                    <span>
+                      <span className="font-semibold">{kupon.code}</span> uygulandı
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setKupon(null)}
+                      className="text-xs font-medium text-green-700 underline underline-offset-2 hover:text-green-900"
+                    >
+                      Kaldır
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      kuponUygula()
+                    }}
+                    className="flex gap-2"
+                  >
+                    <label htmlFor="kupon-kodu" className="sr-only">İndirim kuponu</label>
+                    <input
+                      id="kupon-kodu"
+                      value={kuponGirdi}
+                      onChange={(e) => {
+                        setKuponGirdi(e.target.value)
+                        setKuponHata(null)
+                      }}
+                      placeholder="İndirim kuponu"
+                      autoCapitalize="characters"
+                      autoComplete="off"
+                      className="min-w-0 flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm uppercase placeholder:normal-case focus:border-transparent focus:ring-2 focus:ring-brand-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!kuponGirdi.trim() || kuponYukleniyor}
+                      className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 disabled:opacity-40"
+                    >
+                      {kuponYukleniyor ? '…' : 'Uygula'}
+                    </button>
+                  </form>
+                )}
+                {kuponHata && <p className="mt-1.5 text-xs text-red-600">{kuponHata}</p>}
+                {!kupon && hosgeldinKuponu && (
+                  <button
+                    type="button"
+                    onClick={() => kuponUygula(hosgeldinKuponu.code)}
+                    disabled={kuponYukleniyor}
+                    className="mt-2 w-full rounded-xl border border-dashed border-brand-300 bg-brand-50 px-3 py-2 text-left text-xs text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    İlk siparişinize özel <span className="font-bold">%{hosgeldinKuponu.percent} indirim</span>:{' '}
+                    <span className="font-mono font-bold">{hosgeldinKuponu.code}</span> · Uygula
+                  </button>
+                )}
               </div>
 
               {error && (

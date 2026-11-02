@@ -73,7 +73,7 @@ export default function ReturnRow(props: Props) {
         <div className="text-right shrink-0">
           <p className="font-black text-gray-900">{props.totalAmount}</p>
           <Link
-            href={`/admin/${props.kapsam}/siparisler/${props.orderId}`}
+            href={`/admin/siparisler/${props.orderId}`}
             className="text-xs text-blue-600 hover:text-blue-700 font-medium"
           >
             Siparişi aç →

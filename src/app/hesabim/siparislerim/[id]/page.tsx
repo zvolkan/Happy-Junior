@@ -118,7 +118,7 @@ export default async function SiparisDetayPage({ params }: Props) {
   // siparişlerin dökümü de değişirdi.
   const total = Number(order.totalAmount)
   const cargoFee = Number(order.shippingFee ?? 0)
-  const subtotal = order.subtotal != null ? Number(order.subtotal) : total - cargoFee
+  const subtotal = order.subtotal != null ? Number(order.subtotal) : total - cargoFee + Number(order.discountAmount ?? 0)
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -319,6 +319,12 @@ export default async function SiparisDetayPage({ params }: Props) {
               <span>Ara Toplam</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
+            {order.discountAmount != null && Number(order.discountAmount) > 0 && (
+              <div className="flex justify-between text-green-700">
+                <span>İndirim ({order.couponCode})</span>
+                <span>−{formatPrice(Number(order.discountAmount))}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm text-gray-600">
               <span>Kargo</span>
               <span className={cargoFee === 0 ? 'text-green-600 font-medium' : ''}>

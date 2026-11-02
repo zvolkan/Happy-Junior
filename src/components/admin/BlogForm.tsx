@@ -99,7 +99,7 @@ export default function BlogForm({ brands, kapsam, defaultValues = {} }: Props) 
 
       if (result.ok) {
         toast.success(result.message)
-        router.push(`/admin/${kapsam}/blog`)
+        router.push(`/admin/blog`)
         router.refresh()
       } else {
         toast.error(result.error)
@@ -114,7 +114,7 @@ export default function BlogForm({ brands, kapsam, defaultValues = {} }: Props) 
       const result = await deleteBlogPost(defaultValues.id!)
       if (result.ok) {
         toast.success(result.message)
-        router.push(`/admin/${kapsam}/blog`)
+        router.push(`/admin/blog`)
         router.refresh()
       } else {
         toast.error(result.error)
@@ -331,7 +331,7 @@ export default function BlogForm({ brands, kapsam, defaultValues = {} }: Props) 
               </button>
             )}
             <Link
-              href={`/admin/${kapsam}/blog`}
+              href={`/admin/blog`}
               className="text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
             >
               Vazgeç
