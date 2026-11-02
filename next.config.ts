@@ -102,6 +102,13 @@ const nextConfig: NextConfig = {
           )
           return config
         },
+        // Node istemcisi WASM sorgu derleyicisini çalışma anında fs ile okuyor
+        // (path.join(dirname, 'query_compiler_bg.wasm')). Next'in dosya izleyicisi
+        // bunu göremiyor; eklenmezse Vercel fonksiyonunda dosya olmuyor ve her
+        // veritabanı sorgusu "Bir şeyler ters gitti" sayfasına düşüyor.
+        outputFileTracingIncludes: {
+          '/**': ['./node_modules/.prisma/client/query_compiler_bg.wasm'],
+        },
         turbopack: { resolveAlias: { './src/lib/prisma-istemci.ts': './src/lib/prisma-istemci.node.ts' } },
       }
     : {}),
